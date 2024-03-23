@@ -37,7 +37,6 @@ export default function BusinessList(
         {page?.content?.map((business) => (
           <BusinessCard key={business.id} business={business} />
         ))}
-        Test
       </Box>
       {page?.content?.length !== undefined && page?.content?.length > 3 && (
         <Box sx={{ display: "flex", justifyContent: "center" }}>

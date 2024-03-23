@@ -5,9 +5,9 @@ import BusinessTab from "./BusinessTab";
 export default function HomePage() {
   return (
     <Routes>
-      <Route index element={<Navigate to="services" replace />} />
       <Route path="services" element={<ServicesTab />} />
       <Route path="businesses" element={<BusinessTab />} />
+      <Route index element={<Navigate to="services" replace />} />
     </Routes>
   );
 }

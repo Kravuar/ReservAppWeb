@@ -4,8 +4,8 @@ import ProfileBusinessTab from "./ProfileBusinessTab";
 export default function ProfilePage() {
   return (
     <Routes>
-      <Route index element={<Navigate to="businesses" replace />} />
       <Route path="businesses" element={<ProfileBusinessTab />} />
+      <Route index element={<Navigate to="businesses" replace />} />
     </Routes>
   );
 }

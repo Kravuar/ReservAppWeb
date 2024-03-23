@@ -17,10 +17,10 @@ export default function AppContainer() {
       />
       <Container sx={{marginY: 2}}>
         <Routes>
-          <Route path="/*" element={<HomePage />} />
           <Route element={<RequiredAuth />}>
             <Route path="/profile/*" element={<ProfilePage />} />
           </Route>
+          <Route path="/*" element={<HomePage />} />
         </Routes>
       </Container>
     </>
