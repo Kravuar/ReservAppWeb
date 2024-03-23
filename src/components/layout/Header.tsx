@@ -97,7 +97,7 @@ export default function Header({ tabs }: { tabs: TabInfo[] }) {
   return (
     <AppBar position="static">
       <Toolbar>
-        <MenuList tabs={tabs} />
+        <MenuList tabs={tabs}/>
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
           ReservApp
         </Typography>

@@ -11,24 +11,9 @@ import {
 } from "@mui/material";
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import { ServiceDetailed } from "../../domain/Service";
 
-export interface Business {
-  id: number;
-  name: string;
-  picture: string;
-  rating: number;
-}
-
-export interface ServiceData {
-  id: number;
-  name: string;
-  description: string;
-  picture: string;
-  rating: number;
-  business: Business;
-}
-
-export default function ServiceCard({ service }: { service: ServiceData }) {
+export default function ServiceCard({ service }: { service: ServiceDetailed }) {
   const [serviceImageLoaded, setServiceImageLoaded] = useState(false);
   const [businessImageLoaded, setBusinessImageLoaded] = useState(false);
 

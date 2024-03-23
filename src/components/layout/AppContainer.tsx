@@ -12,6 +12,7 @@ export default function AppContainer() {
         tabs={[
           { displayName: "Главная", route: "/" },
           { displayName: "Услуги", route: "/services" },
+          { displayName: "Бизнесы", route: "/businesses" },
         ]}
       />
       <Container sx={{marginY: 2}}>

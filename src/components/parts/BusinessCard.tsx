@@ -10,16 +10,9 @@ import {
   Skeleton,
 } from "@mui/material";
 import { Link } from "react-router-dom";
+import { BusinessDetailed } from "../../domain/Business";
 
-export interface BusinessData {
-  id: number;
-  name: string;
-  picture: string;
-  description: string;
-  rating: number;
-}
-
-export default function BusinessCard({ business }: { business: BusinessData }) {
+export default function BusinessCard({ business }: { business: BusinessDetailed }) {
   const [businessImageLoaded, setBusinessImageLoaded] = useState(false);
 
   return (
