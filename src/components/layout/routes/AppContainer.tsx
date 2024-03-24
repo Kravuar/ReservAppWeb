@@ -1,9 +1,9 @@
 import { Container } from "@mui/material";
-import Header from "./Header";
-import { Routes, Route } from "react-router-dom";
-import HomePage from "../pages/home/HomePage";
-import ProfilePage from "../pages/profile/ProfilePage";
-import { RequiredAuth } from "../util/SecureRouteCustom";
+import Header from "../Header";
+import { Routes, Route, Navigate } from "react-router-dom";
+import ProfilePage from "../../pages/profile/ProfilePage";
+import { RequiredAuth } from "../../util/SecureRouteCustom";
+import HomeRoutes from "./HomeRoutes";
 
 export default function AppContainer() {
   return (
@@ -18,9 +18,10 @@ export default function AppContainer() {
       <Container sx={{marginY: 2}}>
         <Routes>
           <Route element={<RequiredAuth />}>
-            <Route path="/profile/*" element={<ProfilePage />} />
+            <Route path="profile/*" element={<ProfilePage />} />
           </Route>
-          <Route path="/*" element={<HomePage />} />
+          <Route path="home/*" element={<HomeRoutes />} />
+          <Route index element={<Navigate to="home" replace />} />
         </Routes>
       </Container>
     </>

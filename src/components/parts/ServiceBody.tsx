@@ -1,0 +1,62 @@
+import React from "react";
+import { ServiceDetailed } from "../../domain/Service";
+import ServiceCard from "./ServiceCard";
+import { Box, Tab, Tabs } from "@mui/material";
+import StaffScheduleTab, {
+  ScheduleSupplier as StaffScheduleSupplier,
+  StaffSupplier
+} from "./StaffScheduleTab";
+import ServiceScheduleTab, {
+  ScheduleSupplier as ServiceScheduleSupplier,
+} from "./ServiceScheduleTab";
+
+export default function ServiceBody({
+  service,
+  serviceScheduleSupplier,
+  staffScheduleSupplier,
+  staffSupplier,
+}: {
+  service: ServiceDetailed;
+  serviceScheduleSupplier: ServiceScheduleSupplier;
+  staffScheduleSupplier: StaffScheduleSupplier;
+  staffSupplier: StaffSupplier;
+}) {
+  const [tab, setTab] = React.useState(0);
+
+  return (
+    <Box
+      display="flex"
+      flexDirection="column"
+      justifyContent="space-between"
+      alignItems="center"
+    >
+      <ServiceCard service={service} />
+      <Box sx={{ display: "flex", height: "100%" }}>
+        <Tabs
+          orientation="vertical"
+          variant="scrollable"
+          value={tab}
+          onChange={(_, value) => setTab(value)}
+          sx={{ borderRight: 1, borderColor: "divider", minWidth: "150px" }}
+        >
+          <Tab label="Расписание" />
+          <Tab label="Сотрудники" />
+          <Tab label="Отзывы" />
+        </Tabs>
+        <Box sx={{ padding: 3 }}>
+          {tab === 0 && (
+            <ServiceScheduleTab scheduleSupplier={serviceScheduleSupplier} />
+          )}
+          {tab === 1 && (
+            <StaffScheduleTab
+              scheduleSupplier={staffScheduleSupplier}
+              staffSupplier={staffSupplier}
+            />
+          )}
+          {/* TODO: Reviews tab */}
+          {tab === 2 && <div>Тут должны быть отзывы</div>}
+        </Box>
+      </Box>
+    </Box>
+  );
+}

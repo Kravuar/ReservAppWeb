@@ -17,17 +17,13 @@ export default function BusinessList(
     .catch(error => alert(error));
   }, [pageNumber, pageSupplier]);
 
-  function handlePageChange(_: React.ChangeEvent<unknown>, value: number) {
-    setPageNumber(value);
-  };
-
   return (
     <Box>
       <Box sx={{ display: "flex", justifyContent: "center" }}>
         <Pagination
           count={page?.totalPages || 1}
           page={pageNumber}
-          onChange={handlePageChange}
+          onChange={(_, newPage) => setPageNumber(newPage)}
           sx={{ marginTop: 1 }}
           showFirstButton
           showLastButton
@@ -43,7 +39,7 @@ export default function BusinessList(
           <Pagination
             count={page?.totalPages || 1}
             page={pageNumber}
-            onChange={handlePageChange}
+            onChange={(_, newPage) => setPageNumber(newPage)}
             sx={{ marginTop: 1 }}
             showFirstButton
             showLastButton

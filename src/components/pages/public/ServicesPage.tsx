@@ -1,19 +1,11 @@
 import ServiceList from "../../parts/ServiceList";
 import { Page } from "../../../domain/Page";
 import { ServiceDetailed } from "../../../domain/Service";
-import { activeServices, businessById } from "../../../services/api";
-import { stubBusiness, stubService } from "../../../services/stubbings";
+import { activeServices } from "../../../services/api";
 
-export default function ServiceTab() {
+export default function ServicesPage() {
   async function fetchData(page: number): Promise<Page<ServiceDetailed>> {
-    const services = await activeServices(page, 10);
-    return {
-      content: await Promise.all(services.content.map(async (service) => {
-        const detailedBusiness = stubBusiness(await businessById(service.business.id));
-        return stubService(service, detailedBusiness);
-      })),
-      totalPages: services.totalPages
-    };
+    return activeServices(page, 10);
   }
 
   async function fetchDataWithName(name: string, page: number): Promise<Page<ServiceDetailed>> {

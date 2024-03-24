@@ -33,11 +33,7 @@ export default function ServiceList({
   useEffect(() => {
     search(name, pageNumber, setPage, pageSupplier, searchPageSupplier);
   }, [name, pageNumber, pageSupplier, searchPageSupplier]);
-
-  function handlePageChange(_: React.ChangeEvent<unknown>, value: number) {
-    setPageNumber(value);
-  }
-
+  
   function handleSearchClick() {
     search(name, pageNumber, setPage, pageSupplier, searchPageSupplier);
   }
@@ -71,7 +67,7 @@ export default function ServiceList({
         <Pagination
           count={page?.totalPages || 1}
           page={pageNumber}
-          onChange={handlePageChange}
+          onChange={(_, newPage) => setPageNumber(newPage)}
           sx={{ marginTop: 2 }}
           showFirstButton
           showLastButton
@@ -87,7 +83,7 @@ export default function ServiceList({
           <Pagination
             count={page?.totalPages || 1}
             page={pageNumber}
-            onChange={handlePageChange}
+            onChange={(_, newPage) => setPageNumber(newPage)}
             sx={{ marginTop: 1 }}
             showFirstButton
             showLastButton

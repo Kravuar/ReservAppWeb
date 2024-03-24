@@ -70,7 +70,7 @@ export default function Header({ tabs }: { tabs: TabInfo[] }) {
         onClick={handleProfileMenuOpen}
         color="inherit"
       >
-        <Avatar sx={{ width: 32, height: 32 }} />
+        <Avatar sx={{ width: 32, height: 32 }}/>
       </IconButton>
       <Menu
         id="menu-appbar"

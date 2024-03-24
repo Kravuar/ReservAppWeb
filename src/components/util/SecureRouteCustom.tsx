@@ -1,8 +1,8 @@
-import { useEffect } from 'react';
-import { useOktaAuth } from '@okta/okta-react';
-import { toRelativeUrl } from '@okta/okta-auth-js';
-import { Outlet } from 'react-router-dom';
-import Loading from './Loading';
+import { useEffect } from "react";
+import { useOktaAuth } from "@okta/okta-react";
+import { toRelativeUrl } from "@okta/okta-auth-js";
+import { Outlet } from "react-router-dom";
+import ErrorPage from "./ErrorPage";
 
 export function RequiredAuth() {
   const { oktaAuth, authState } = useOktaAuth();
@@ -13,15 +13,17 @@ export function RequiredAuth() {
     }
 
     if (!authState?.isAuthenticated) {
-      const originalUri = toRelativeUrl(window.location.href, window.location.origin);
+      const originalUri = toRelativeUrl(
+        window.location.href,
+        window.location.origin
+      );
       oktaAuth.setOriginalUri(originalUri);
       oktaAuth.signInWithRedirect();
     }
-  }, [oktaAuth, !!authState, authState?.isAuthenticated]);
+  }, [oktaAuth, authState, authState?.isAuthenticated]);
 
-  if (!authState || !authState?.isAuthenticated) {
-    return (<Loading />);
-  }
+  if (!authState || !authState?.isAuthenticated)
+    return <ErrorPage message={"Не авторизован"} />;
 
-  return (<Outlet />);
+  return <Outlet />;
 }
