@@ -16,11 +16,12 @@ export default function ServiceScheduleTab({
 }: {
   scheduleSupplier: ScheduleSupplier;
 }) {
+  const [selectedDate, setSelectedDate] = useState<LocalDate>(LocalDate.now());
   const [startOfWeek, setStartOfWeek] = useState<LocalDate>(
-    LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+    selectedDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
   );
   const [endOfWeek, setEndOfWeek] = useState<LocalDate>(
-    LocalDate.now().with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY))
+    selectedDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY))
   );
   const [schedule, setSchedule] = useState<
     Map<LocalDate, ReservationSlotDetailed[]>
@@ -33,9 +34,11 @@ export default function ServiceScheduleTab({
   }, [startOfWeek, endOfWeek, scheduleSupplier]);
 
   function handleWeekChange(
+    newSelectedDate: LocalDate,
     newStartOfWeek: LocalDate,
     newEndOfWeek: LocalDate
   ) {
+    setSelectedDate(newSelectedDate);
     setStartOfWeek(newStartOfWeek);
     setEndOfWeek(newEndOfWeek);
   }
@@ -48,18 +51,7 @@ export default function ServiceScheduleTab({
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column" }}>
-      <Box sx={{ display: "flex", flexDirection: "row" }}>
-        <WeekSelector date={startOfWeek} onChange={handleWeekChange} />
-        <IconButton
-          edge="end"
-          aria-label="refresh"
-          aria-haspopup="true"
-          onClick={handleRefresh}
-          color="inherit"
-        >
-          <Refresh />
-        </IconButton>
-      </Box>
+      <WeekSelector onAccept={handleRefresh} date={selectedDate} onChange={handleWeekChange} />
       {schedule && (
         <ScheduleBody schedule={schedule} />
       )}

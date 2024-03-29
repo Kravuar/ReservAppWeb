@@ -2,7 +2,15 @@ import React, { useState, useEffect } from "react";
 import { DayOfWeek, LocalDate, TemporalAdjusters } from "@js-joda/core";
 import { ReservationSlotDetailed } from "../../domain/Schedule";
 import { Staff } from "../../domain/Staff";
-import { Box, Tab, Tabs, IconButton, Pagination } from "@mui/material";
+import {
+  Box,
+  Tab,
+  Tabs,
+  IconButton,
+  Pagination,
+  Avatar,
+  Typography,
+} from "@mui/material";
 import ScheduleBody from "./ScheduleBody";
 import { Refresh } from "@mui/icons-material";
 import WeekSelector from "./WeekSelector";
@@ -13,7 +21,10 @@ export type ScheduleSupplier = (
   from: LocalDate,
   to: LocalDate
 ) => Promise<Map<LocalDate, ReservationSlotDetailed[]>>;
-export type StaffSupplier = (page: number, pageSize: number) => Promise<Page<Staff>>;
+export type StaffSupplier = (
+  page: number,
+  pageSize: number
+) => Promise<Page<Staff>>;
 
 export default function StaffScheduleTab({
   scheduleSupplier,
@@ -25,11 +36,12 @@ export default function StaffScheduleTab({
   const [currentStaff, setCurrentStaff] = useState<Staff | null>(null);
   const [staffList, setStaffList] = useState<Page<Staff> | null>(null);
   const [staffPage, setStaffPage] = useState(1);
+  const [selectedDate, setSelectedDate] = useState<LocalDate>(LocalDate.now());
   const [startOfWeek, setStartOfWeek] = useState<LocalDate>(
-    LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+    selectedDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
   );
   const [endOfWeek, setEndOfWeek] = useState<LocalDate>(
-    LocalDate.now().with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY))
+    selectedDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY))
   );
   const [schedule, setSchedule] = useState<
     Map<LocalDate, ReservationSlotDetailed[]>
@@ -42,7 +54,8 @@ export default function StaffScheduleTab({
   }, [staffPage, staffSupplier]);
 
   useEffect(() => {
-    if (staffList && staffList.content.length > 0) setCurrentStaff(staffList?.content[0]);
+    if (staffList && staffList.content.length > 0)
+      setCurrentStaff(staffList?.content[0]);
   }, [staffList]);
 
   useEffect(() => {
@@ -53,14 +66,18 @@ export default function StaffScheduleTab({
   }, [currentStaff, startOfWeek, endOfWeek, scheduleSupplier]);
 
   function handleStaffChange(newStaffId: number) {
-    const newStaff = staffList?.content.find((staff) => staff.id === newStaffId);
+    const newStaff = staffList?.content.find(
+      (staff) => staff.id === newStaffId
+    );
     if (newStaff) setCurrentStaff(newStaff);
   }
 
   function handleWeekChange(
+    newSelectedDate: LocalDate,
     newStartOfWeek: LocalDate,
     newEndOfWeek: LocalDate
   ) {
+    setSelectedDate(newSelectedDate);
     setStartOfWeek(newStartOfWeek);
     setEndOfWeek(newEndOfWeek);
   }
@@ -71,57 +88,60 @@ export default function StaffScheduleTab({
         .then(setSchedule)
         .catch((error) => alert(error));
   }
-
   return (
     <Box sx={{ display: "flex", flexDirection: "column" }}>
-      <Box sx={{ display: "flex", flexDirection: "row" }}>
-        <WeekSelector date={startOfWeek} onChange={handleWeekChange} />
-        <IconButton
-          edge="end"
-          aria-label="refresh"
-          aria-haspopup="true"
-          onClick={handleRefresh}
-          color="inherit"
-        >
-          <Refresh />
-        </IconButton>
-      </Box>
-      <Box sx={{ display: "flex", flexDirection: "row" }}>
-        <Pagination
-          count={staffList?.totalPages || 1}
-          page={staffPage}
-          onChange={(_, newPage) => setStaffPage(newPage)}
-          sx={{ marginTop: 1 }}
-          showFirstButton
-          showLastButton
+      <Box sx={{ display: "flex", flexDirection: "row"}}>
+        <WeekSelector
+          onAccept={handleRefresh}
+          date={selectedDate}
+          onChange={handleWeekChange}
         />
-        <Tabs
+        <Box
           sx={{
-            width: "30%",
-            borderRight: 1,
-            borderColor: "divider",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            maxHeight: '30vw'
           }}
-          value={currentStaff?.id}
-          onChange={(_, newStaffId) => handleStaffChange(newStaffId)}
-          variant="scrollable"
-          scrollButtons="auto"
-          aria-label="staff tabs"
-          orientation="vertical"
         >
-          {staffList?.content.map((staff) => (
-            <Tab
-              label={staff.name}
-              value={staff.id}
-              key={staff.id}
-              icon={staff.picture}
-            />
-          ))}
-        </Tabs>
-        <Box sx={{ width: "70%" }}>
-          {currentStaff && (
-            <ScheduleBody key={currentStaff.id} schedule={schedule} />
-          )}
+          <Typography variant="h6" component="div">
+            Сотрудники
+          </Typography>
+          <Pagination
+            count={staffList?.totalPages || 1}
+            page={staffPage}
+            onChange={(_, newPage) => setStaffPage(newPage)}
+            sx={{ marginTop: 1 }}
+            showFirstButton
+            showLastButton
+          />
+          <Tabs
+            sx={{
+              borderRight: 1,
+              borderColor: "divider",
+            }}
+            value={currentStaff != null ? currentStaff.id : false}
+            onChange={(_, newStaffId) => handleStaffChange(newStaffId)}
+            variant="scrollable"
+            scrollButtons="auto"
+            aria-label="staff tabs"
+            orientation="vertical"
+          >
+            {staffList?.content.map((staff) => (
+              <Tab
+                label={staff.name}
+                value={staff.id}
+                key={staff.id}
+                icon={<Avatar src={staff.picture} />}
+              />
+            ))}
+          </Tabs>
         </Box>
+      </Box>
+      <Box>
+        {currentStaff && (
+          <ScheduleBody key={currentStaff.id} schedule={schedule} />
+        )}
       </Box>
     </Box>
   );

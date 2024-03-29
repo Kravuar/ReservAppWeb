@@ -5,3 +5,6 @@ Define a .env file with the following contents:
 * REACT_APP_CALLBACK_PATH=...callback-postfix... **/login/callback**
 * REACT_APP_SCOPES=...your_scopes... **'openid profile'**
 * REACT_APP_BACKEND=...backend-url... **http://localhost:8080**
+
+### TODOS:
+1. Make routes great again

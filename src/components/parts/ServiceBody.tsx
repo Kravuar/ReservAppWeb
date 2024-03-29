@@ -28,7 +28,7 @@ export default function ServiceBody({
       display="flex"
       flexDirection="column"
       justifyContent="space-between"
-      alignItems="center"
+      // alignItems="center"
     >
       <ServiceCard service={service} />
       <Box sx={{ display: "flex", height: "100%" }}>

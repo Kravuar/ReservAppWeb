@@ -1,7 +1,7 @@
 import { Route, BrowserRouter, Routes } from "react-router-dom";
 import { LoginCallback, Security } from "@okta/okta-react";
 import { OktaAuth, toRelativeUrl } from "@okta/okta-auth-js";
-import AppContainer from "./components/layout/routes/AppContainer";
+import AppContainer from "./components/layout/AppContainer";
 import { CALLBACK_PATH, oktaAuth } from "./services/network";
 
 const App = () => {

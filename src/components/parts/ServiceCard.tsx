@@ -40,7 +40,7 @@ export default function ServiceCard({ service }: { service: ServiceDetailed }) {
             {/* Service Name and Rating */}
             <Box display="flex" flexDirection="row" alignItems="center">
               <Typography component="div" variant="h3">
-                <Button component={Link} to={`/services?id=${service.id}`}>
+                <Button component={Link} to={`${service.id}`}>
                   {service.name}
                 </Button>
               </Typography>
@@ -50,7 +50,7 @@ export default function ServiceCard({ service }: { service: ServiceDetailed }) {
             <Box display="flex" flexDirection="column" alignItems="flex-end">
               <Button
                 component={Link}
-                to={`/business?id=${service.business.id}`}
+                to={`${service.business.id}`}
               >
                 <Box display="flex" flexDirection="row" alignItems="center">
                   {!businessImageLoaded && (

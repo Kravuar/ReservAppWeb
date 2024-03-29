@@ -148,7 +148,7 @@ export async function myServicesByBusiness(
 
 export async function staffById(staffId: number): Promise<Staff> {
   const response = await axios.get<RealStaff>(
-    `staff/api-v1/retrieval/my/by-id/${staffId}`
+    `staff/api-v1/retrieval/by-id/${staffId}`
   );
   return stubStaff(response.data);
 }
@@ -159,7 +159,7 @@ export async function staffByBusinessId(
   pageSize: number
 ): Promise<Page<Staff>> {
   const response = await axios.get<Page<RealStaff>>(
-    `staff/api-v1/retrieval/my/by-business/${businessId}/${paginationAdjustment(
+    `staff/api-v1/retrieval/by-business/${businessId}/${paginationAdjustment(
       page
     )}/${pageSize}`
   );
@@ -199,7 +199,7 @@ export async function scheduleByServiceAndStaff(
   to: LocalDate
 ): Promise<Map<LocalDate, ReservationSlotDetailed[]>> {
   const response = await axios.get<Map<LocalDate, ReservationSlot[]>>(
-    `schedule/api-v1/retrieval/my/by-service-and-staff/${serviceId}/${staffId}/${from}/${to}`
+    `schedule/api-v1/retrieval/by-service-and-staff/${serviceId}/${staffId}/${from}/${to}`
   );
   const reservations = await reservationsByServiceAndStaff(
     serviceId,
@@ -237,7 +237,7 @@ export async function scheduleByService(
   to: LocalDate
 ): Promise<Map<LocalDate, ReservationSlotDetailed[]>> {
   const response = await axios.get<ScheduleByService[]>(
-    `schedule/api-v1/retrieval/my/by-service/${serviceId}/${from}/${to}`
+    `schedule/api-v1/retrieval/by-service/${serviceId}/${from}/${to}`
   );
   const reservations = await reservationsByService(serviceId, from, to);
 
