@@ -9,17 +9,20 @@ import StaffScheduleTab, {
 import ServiceScheduleTab, {
   ScheduleSupplier as ServiceScheduleSupplier,
 } from "./ServiceScheduleTab";
+import { ReserveAction } from "./ScheduleBody";
 
 export default function ServiceBody({
   service,
   serviceScheduleSupplier,
   staffScheduleSupplier,
   staffSupplier,
+  onReserve
 }: {
   service: ServiceDetailed;
   serviceScheduleSupplier: ServiceScheduleSupplier;
   staffScheduleSupplier: StaffScheduleSupplier;
   staffSupplier: StaffSupplier;
+  onReserve: ReserveAction;
 }) {
   const [tab, setTab] = React.useState(0);
 
@@ -37,7 +40,7 @@ export default function ServiceBody({
           variant="scrollable"
           value={tab}
           onChange={(_, value) => setTab(value)}
-          sx={{ borderRight: 1, borderColor: "divider", minWidth: "150px" }}
+          sx={{ borderRight: 1, borderColor: "divider", tabSize: 50 }}
         >
           <Tab label="Расписание" />
           <Tab label="Сотрудники" />
@@ -45,10 +48,11 @@ export default function ServiceBody({
         </Tabs>
         <Box sx={{ padding: 3 }}>
           {tab === 0 && (
-            <ServiceScheduleTab scheduleSupplier={serviceScheduleSupplier} />
+            <ServiceScheduleTab onReserve={onReserve} scheduleSupplier={serviceScheduleSupplier} />
           )}
           {tab === 1 && (
             <StaffScheduleTab
+              onReserve={onReserve}
               scheduleSupplier={staffScheduleSupplier}
               staffSupplier={staffSupplier}
             />

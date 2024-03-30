@@ -3,6 +3,7 @@ export class Staff {
     public id: number,
     public sub: string,
     public name: string,
+    public description: string,
     public picture: string,
     public rating: number,
     public business: StaffBusiness,

@@ -3,46 +3,69 @@ import {
   Card,
   CardHeader,
   Avatar,
-  Chip,
   Divider,
   CardContent,
   Typography,
-  CardMedia,
+  Box,
+  Rating,
+  IconButton,
 } from "@mui/material";
-import { AccessTime, Money, StarRate } from "@mui/icons-material";
+import { AccessTime, EditCalendar, Money } from "@mui/icons-material";
 
 export default function ReservationSlotCard({
   reservationSlot,
+  showStaff,
+  onReserve
 }: {
   reservationSlot: ReservationSlotDetailed;
+  onReserve: () => void;
+  showStaff?: boolean;
 }) {
   return (
-    <Card sx={{ maxWidth: 345, m: 2 }}>
+    <Card sx={{ m: 2 }}>
       <CardHeader
         avatar={
-          reservationSlot.staff && <Avatar aria-label="staff-picture" src={reservationSlot.staff.picture} />
+          <IconButton
+          aria-label="login"
+          aria-haspopup="true"
+          onClick={onReserve}
+          color="inherit"
+          >
+            <EditCalendar />
+          </IconButton>
         }
-        title={reservationSlot.staff ? `Сотрудник: ${reservationSlot.staff.sub}` : "Окно"}
+        title={
+          showStaff && reservationSlot.staff ? (
+            <Typography
+              variant="h6"
+              color="textSecondary"
+              component="p"
+              gutterBottom
+            >
+              Запись, {reservationSlot.staff.name}
+            </Typography>
+          ) : (
+            <Typography
+              variant="h6"
+              color="textSecondary"
+              component="p"
+              gutterBottom
+            >
+              Запись
+            </Typography>
+          )
+        }
         subheader={
           reservationSlot.staff && (
-            <Chip
-              icon={<StarRate />}
-              label={`${reservationSlot.staff.rating} Stars`}
-              color="success"
-            />
+            <Box display="flex" flexDirection={"row"} alignItems="center">
+              <Avatar src={reservationSlot.staff.picture} />
+              <Rating value={reservationSlot.staff.rating} readOnly />
+            </Box>
           )
         }
       />
       <Divider variant="middle" />
       <CardContent>
-        <Typography
-          variant="h6"
-          color="textSecondary"
-          component="p"
-          gutterBottom
-        >
-          Time Slot:
-        </Typography>
         <Typography
           variant="body1"
           component="div"
@@ -63,15 +86,6 @@ export default function ReservationSlotCard({
           {`Свободные места: ${reservationSlot.reservationsLeft}/${reservationSlot.maxReservations}`}
         </Typography>
       </CardContent>
-      {reservationSlot.staff && (
-        <CardMedia
-          component="img"
-          alt="Staff"
-          height="140"
-          image={reservationSlot.staff.picture}
-          title="Сотрудник"
-        />
-      )}
     </Card>
   );
 }

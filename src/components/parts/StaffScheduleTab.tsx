@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from "react";
-import { DayOfWeek, LocalDate, TemporalAdjusters } from "@js-joda/core";
+import { useState, useEffect } from "react";
+import { LocalDate } from "@js-joda/core";
 import { ReservationSlotDetailed } from "../../domain/Schedule";
 import { Staff } from "../../domain/Staff";
 import {
   Box,
   Tab,
   Tabs,
-  IconButton,
   Pagination,
   Avatar,
   Typography,
+  Rating,
+  Divider,
 } from "@mui/material";
-import ScheduleBody from "./ScheduleBody";
-import { Refresh } from "@mui/icons-material";
+import ScheduleBody, { ReserveAction } from "./ScheduleBody";
 import WeekSelector from "./WeekSelector";
 import { Page } from "../../domain/Page";
 
@@ -29,20 +29,16 @@ export type StaffSupplier = (
 export default function StaffScheduleTab({
   scheduleSupplier,
   staffSupplier,
+  onReserve
 }: {
   scheduleSupplier: ScheduleSupplier;
   staffSupplier: StaffSupplier;
+  onReserve: ReserveAction;
 }) {
   const [currentStaff, setCurrentStaff] = useState<Staff | null>(null);
   const [staffList, setStaffList] = useState<Page<Staff> | null>(null);
   const [staffPage, setStaffPage] = useState(1);
   const [selectedDate, setSelectedDate] = useState<LocalDate>(LocalDate.now());
-  const [startOfWeek, setStartOfWeek] = useState<LocalDate>(
-    selectedDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
-  );
-  const [endOfWeek, setEndOfWeek] = useState<LocalDate>(
-    selectedDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY))
-  );
   const [schedule, setSchedule] = useState<
     Map<LocalDate, ReservationSlotDetailed[]>
   >(new Map());
@@ -58,13 +54,6 @@ export default function StaffScheduleTab({
       setCurrentStaff(staffList?.content[0]);
   }, [staffList]);
 
-  useEffect(() => {
-    if (currentStaff)
-      scheduleSupplier(currentStaff.id, startOfWeek, endOfWeek)
-        .then(setSchedule)
-        .catch((error) => alert(error));
-  }, [currentStaff, startOfWeek, endOfWeek, scheduleSupplier]);
-
   function handleStaffChange(newStaffId: number) {
     const newStaff = staffList?.content.find(
       (staff) => staff.id === newStaffId
@@ -78,30 +67,23 @@ export default function StaffScheduleTab({
     newEndOfWeek: LocalDate
   ) {
     setSelectedDate(newSelectedDate);
-    setStartOfWeek(newStartOfWeek);
-    setEndOfWeek(newEndOfWeek);
-  }
-
-  function handleRefresh() {
     if (currentStaff)
-      scheduleSupplier(currentStaff.id, startOfWeek, endOfWeek)
+      scheduleSupplier(currentStaff.id, newStartOfWeek, newEndOfWeek)
         .then(setSchedule)
         .catch((error) => alert(error));
   }
+
   return (
     <Box sx={{ display: "flex", flexDirection: "column" }}>
-      <Box sx={{ display: "flex", flexDirection: "row"}}>
-        <WeekSelector
-          onAccept={handleRefresh}
-          date={selectedDate}
-          onChange={handleWeekChange}
-        />
+      <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
+        <WeekSelector onAccept={handleWeekChange} date={selectedDate} />
+        <Divider orientation="vertical" flexItem />
         <Box
           sx={{
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            maxHeight: '30vw'
+            maxHeight: "30vw",
           }}
         >
           <Typography variant="h6" component="div">
@@ -116,10 +98,6 @@ export default function StaffScheduleTab({
             showLastButton
           />
           <Tabs
-            sx={{
-              borderRight: 1,
-              borderColor: "divider",
-            }}
             value={currentStaff != null ? currentStaff.id : false}
             onChange={(_, newStaffId) => handleStaffChange(newStaffId)}
             variant="scrollable"
@@ -137,10 +115,31 @@ export default function StaffScheduleTab({
             ))}
           </Tabs>
         </Box>
+        <Divider orientation="vertical" flexItem />
+        {currentStaff && (
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              border: "divider",
+              borderRadius: 4,
+              boxShadow: 4,
+              p: 1,
+              mx: 2,
+              backgroundColor: "background.paper",
+            }}
+          >
+            <Rating value={currentStaff.rating} readOnly />
+            <Typography variant="body1">
+              {currentStaff.description}
+            </Typography>
+          </Box>
+        )}
       </Box>
       <Box>
         {currentStaff && (
-          <ScheduleBody key={currentStaff.id} schedule={schedule} />
+          <ScheduleBody key={currentStaff.id} schedule={schedule} onReserve={onReserve}/>
         )}
       </Box>
     </Box>

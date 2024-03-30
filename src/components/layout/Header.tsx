@@ -47,7 +47,6 @@ export default function Header({ tabs }: { tabs: TabInfo[] }) {
     return (
       <Tooltip title="Войти">
         <IconButton
-          edge="end"
           aria-label="login"
           aria-haspopup="true"
           onClick={handleLogin}
@@ -63,7 +62,6 @@ export default function Header({ tabs }: { tabs: TabInfo[] }) {
     <>
       <IconButton
         size="large"
-        edge="end"
         aria-label="account of current user"
         aria-controls="menu-appbar"
         aria-haspopup="true"
@@ -123,7 +121,6 @@ function MenuList({ tabs }: { tabs: TabInfo[] }) {
     <>
       <IconButton
         size="large"
-        edge="start"
         color="inherit"
         aria-label="menu"
         onClick={handleClick}

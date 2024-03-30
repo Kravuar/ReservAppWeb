@@ -4,7 +4,8 @@ import { ServiceDetailed } from "../../../domain/Service";
 import { Box, Skeleton } from "@mui/material";
 import { useParams } from "react-router-dom";
 import ErrorPage from "../../util/ErrorPage";
-import { scheduleByService, scheduleByServiceAndStaff, serviceById, staffByBusinessId } from "../../../services/api";
+import { reserveSlot, scheduleByService, scheduleByServiceAndStaff, serviceById, staffByBusinessId } from "../../../services/api";
+import { LocalDateTime } from "@js-joda/core";
 
 export default function ServicePage() {
   const id = Number(useParams<{ id: string }>().id);
@@ -28,6 +29,7 @@ export default function ServicePage() {
         staffScheduleSupplier={(staffId, from, to) => scheduleByServiceAndStaff(id, staffId, from, to)}
         serviceScheduleSupplier={(from, to) => scheduleByService(id, from, to)}
         staffSupplier={(page, pageSize) => staffByBusinessId(service.business.id, page, pageSize)}
+        onReserve={(staffId, date, start) => reserveSlot(staffId, service.id, LocalDateTime.of(date, start))}
       />
     );
   else if (error) return <ErrorPage message={error} />;
@@ -37,7 +39,7 @@ export default function ServicePage() {
 function SkeletonBody() {
   return (
     <Box>
-      {Array.from(Array(5)).map((_, index) => (
+      {Array.from(Array(10)).map((_, index) => (
         <Box key={index} display="flex" alignItems="center" mb={2}>
           <Skeleton variant="circular" width={40} height={40} />
           <Box ml={2} flex={1}>

@@ -34,7 +34,7 @@ export default function BusinessCard({ business }: { business: BusinessDetailed 
               {business.name}
             </Button>
           </Typography>
-          <Rating name="read-only" value={business.rating} readOnly />
+          <Rating value={business.rating} readOnly />
           <Typography
             variant="subtitle1"
             color="text.secondary"

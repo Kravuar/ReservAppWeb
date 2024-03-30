@@ -44,14 +44,11 @@ export default function ServiceCard({ service }: { service: ServiceDetailed }) {
                   {service.name}
                 </Button>
               </Typography>
-              <Rating name="read-only" value={service.rating} readOnly />
+              <Rating value={service.rating} readOnly />
             </Box>
             {/* Business Info */}
             <Box display="flex" flexDirection="column" alignItems="flex-end">
-              <Button
-                component={Link}
-                to={`${service.business.id}`}
-              >
+              <Button component={Link} to={`${service.business.id}`}>
                 <Box display="flex" flexDirection="row" alignItems="center">
                   {!businessImageLoaded && (
                     <Skeleton variant="circular" width={40} height={40} />
@@ -69,12 +66,7 @@ export default function ServiceCard({ service }: { service: ServiceDetailed }) {
                   </Typography>
                 </Box>
               </Button>
-              <Rating
-                name="read-only"
-                value={service.business.rating}
-                readOnly
-                size="small"
-              />
+              <Rating value={service.business.rating} readOnly size="small" />
             </Box>
           </Box>
           <Box

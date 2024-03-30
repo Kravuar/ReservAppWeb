@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { LocalizationProvider, StaticDatePicker } from "@mui/x-date-pickers";
-import { AdapterLuxon } from '@mui/x-date-pickers/AdapterLuxon'
+import { AdapterLuxon } from "@mui/x-date-pickers/AdapterLuxon";
 import { DayOfWeek, LocalDate, TemporalAdjusters } from "@js-joda/core";
 import { DateTime } from "luxon";
+import { Box, IconButton } from "@mui/material";
+import { Refresh } from "@mui/icons-material";
 
 export type WeekChangeHandler = (
   selectedDate: LocalDate,
@@ -12,47 +14,45 @@ export type WeekChangeHandler = (
 
 export default function WeekSelector({
   date,
-  onChange,
-  onAccept
+  onAccept,
 }: {
-  date: LocalDate,
-  onChange: WeekChangeHandler,
-  onAccept: () => void
+  date: LocalDate;
+  onAccept: WeekChangeHandler;
 }) {
   const [selectedDate, setSelectedDate] = useState<LocalDate>(date);
-  const [startOfWeek, setStartOfWeek] = useState<LocalDate>(
-    date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
-  );
-  const [endOfWeek, setEndOfWeek] = useState<LocalDate>(
-    date.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY))
-  );
 
-  useEffect(() => {
-    onChange(selectedDate, startOfWeek, endOfWeek);
-  }, [selectedDate, startOfWeek, endOfWeek, onChange]);
+  function handleAccept() {
+    onAccept(
+      selectedDate,
+      selectedDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)),
+      selectedDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY))
+    );
+  }
 
   function handleDateChange(newDate: DateTime | null) {
-    if (newDate) {
-      const date = LocalDate.parse(newDate.toISODate()!);
-      setSelectedDate(date);
-      setStartOfWeek(date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)));
-      setEndOfWeek(date.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)));
-    }
+    if (newDate) setSelectedDate(LocalDate.parse(newDate.toISODate()!));
   }
-  
+
   return (
-    <LocalizationProvider dateAdapter={AdapterLuxon}>
+    <Box sx={{display: "flex", flexDirection: "row", alignItems: "center", mx: 2 }}>
+      <IconButton
+          aria-label="login"
+          aria-haspopup="true"
+          onClick={handleAccept}
+          color="inherit"
+        >
+          <Refresh />
+        </IconButton>
       <StaticDatePicker
-        value={DateTime.fromISO(date.toString())}
-        onChange={handleDateChange}
+        value={DateTime.fromISO(selectedDate.toString())}
         orientation="landscape"
         slotProps={{
           actionBar: {
-            actions: ['accept'],
+            actions: [],
           },
         }}
-        onAccept={(_) => onAccept()}
+        onChange={handleDateChange}
       />
-    </LocalizationProvider>
+    </Box>
   );
 }

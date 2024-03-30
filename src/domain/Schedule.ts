@@ -4,31 +4,19 @@ import { LocalDate, LocalDateTime, LocalTime } from "@js-joda/core";
 export class ScheduleByService {
   constructor(
     public staff: ScheduleStaff,
-    public schedule: ScheduleByServiceAndStaff
+    public schedule: Map<LocalDate, ReservationSlotDetailed[]>
   ) {}
 }
 
-export type ScheduleByServiceAndStaff = Map<LocalDate, ReservationSlot[]>;
-
-export class ReservationSlot {
-  constructor(
-    public start: LocalTime,
-    public end: LocalTime,
-    public cost: number,
-    public maxReservations: number
-  ) {}
-}
-
-export class ReservationSlotDetailed extends ReservationSlot {
+export class ReservationSlotDetailed {
   constructor(
     public start: LocalTime,
     public end: LocalTime,
     public cost: number,
     public maxReservations: number,
     public reservationsLeft: number,
-    public staff?: Staff
+    public staff: Staff
   ) {
-    super(start, end, cost, maxReservations);
   }
 }
 

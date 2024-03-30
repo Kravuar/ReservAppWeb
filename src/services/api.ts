@@ -6,11 +6,10 @@ import { Service, ServiceDetailed } from "../domain/Service";
 import { Staff, StaffBusiness } from "../domain/Staff";
 import {
   Reservation,
-  ReservationSlot,
   ReservationSlotDetailed,
-  ScheduleByService,
+  ScheduleStaff,
 } from "../domain/Schedule";
-import { LocalDate } from "@js-joda/core";
+import { LocalDate, LocalDateTime, LocalTime } from "@js-joda/core";
 
 function paginationAdjustment(page: number): number {
   return page - 1;
@@ -175,10 +174,16 @@ export async function reservationsByServiceAndStaff(
   from: LocalDate,
   to: LocalDate
 ): Promise<Map<LocalDate, Reservation[]>> {
-  const response = await axios.get<Map<LocalDate, Reservation[]>>(
+  const response = await axios.get<ReservationsDTO>(
     `schedule/api-v1/reservation/retrieval/by-service-and-staff/${serviceId}/${staffId}/${from}/${to}`
   );
-  return response.data;
+  const reservations = response.data;
+  return new Map(
+    Array.from(Object.keys(reservations), (date) => [
+      LocalDate.parse(date),
+      reservations[date],
+    ])
+  );
 }
 
 export async function reservationsByService(
@@ -186,10 +191,16 @@ export async function reservationsByService(
   from: LocalDate,
   to: LocalDate
 ): Promise<Map<LocalDate, Reservation[]>> {
-  const response = await axios.get<Map<LocalDate, Reservation[]>>(
+  const response = await axios.get<ReservationsDTO>(
     `schedule/api-v1/reservation/retrieval/by-service/${serviceId}/${from}/${to}`
   );
-  return response.data;
+  const reservations = response.data;
+  return new Map(
+    Array.from(Object.keys(reservations), (date) => [
+      LocalDate.parse(date),
+      reservations[date],
+    ])
+  );
 }
 
 export async function scheduleByServiceAndStaff(
@@ -198,7 +209,7 @@ export async function scheduleByServiceAndStaff(
   from: LocalDate,
   to: LocalDate
 ): Promise<Map<LocalDate, ReservationSlotDetailed[]>> {
-  const response = await axios.get<Map<LocalDate, ReservationSlot[]>>(
+  const response = await axios.get<ScheduleDTO>(
     `schedule/api-v1/retrieval/by-service-and-staff/${serviceId}/${staffId}/${from}/${to}`
   );
   const reservations = await reservationsByServiceAndStaff(
@@ -207,28 +218,7 @@ export async function scheduleByServiceAndStaff(
     from,
     to
   );
-  const staff = await staffById(staffId);
-  return new Map(
-    Array.from(response.data, ([date, slots]) => [
-      date,
-      slots.map((slot) => {
-        const sameDayReservations = reservations.get(date);
-        const reservationsCount = sameDayReservations
-          ? sameDayReservations.filter(
-              (reservation) => reservation.start === slot.start
-            ).length
-          : 0;
-        return new ReservationSlotDetailed(
-          slot.start,
-          slot.end,
-          slot.cost,
-          slot.maxReservations,
-          reservationsCount,
-          staff
-        );
-      }),
-    ])
-  );
+  return scheduleToDetailed(staffId, response.data, reservations);
 }
 
 export async function scheduleByService(
@@ -236,45 +226,94 @@ export async function scheduleByService(
   from: LocalDate,
   to: LocalDate
 ): Promise<Map<LocalDate, ReservationSlotDetailed[]>> {
-  const response = await axios.get<ScheduleByService[]>(
+  const response = await axios.get<SchedulesByServiceDTO[]>(
     `schedule/api-v1/retrieval/by-service/${serviceId}/${from}/${to}`
   );
   const reservations = await reservationsByService(serviceId, from, to);
-
   const mappedSchedules = await Promise.all(
-    response.data.map(async ({ staff, schedule }) => {
-      const staffDetailed = await staffById(staff.id);
+    response.data.map(async ({ staff, schedule }) =>
+      scheduleToDetailed(staff.id, schedule, reservations)
+    )
+  );
 
-      return new Map(Array.from(schedule, ([date, slots]) => [
+  console.log(mappedSchedules);
+  const flattened = new Map(
+    Array.from(
+      mappedSchedules.flatMap((map) => Array.from(map.entries())),
+      ([date, slots]) => [date, slots.flat()]
+    )
+  );
+  console.log(flattened)
+  flattened.forEach((slots) =>
+    slots.sort((first, second) => first.start.compareTo(second.start))
+  );
+  console.log(flattened);
+
+  return flattened;
+}
+
+export async function reserveSlot(staffId: number, serviceId: number, dateTime: LocalDateTime) {
+  const response = await axios.post<Reservation>(
+    `schedule/api-v1/reservation/management/reserve/${staffId}/${serviceId}/${dateTime}`
+  );
+  return response.data;
+}
+
+async function scheduleToDetailed(
+  staffId: number,
+  schedule: ScheduleDTO,
+  reservations: Map<LocalDate, Reservation[]>
+): Promise<Map<LocalDate, ReservationSlotDetailed[]>> {
+  const staff = await staffById(staffId);
+
+  return new Map(
+    Array.from(Object.keys(schedule), (dateStr) => {
+      const slotsDTO = schedule[dateStr];
+      const date = LocalDate.parse(dateStr);
+      return [
         date,
-        slots.map((slot) => {
+        slotsDTO.map((slot) => {
           const sameDayReservations = reservations.get(date);
+          const start = LocalTime.parse(slot.start);
+          const end = LocalTime.parse(slot.end);
           const reservationsCount = sameDayReservations
             ? sameDayReservations.filter(
-                (reservation) => reservation.start === slot.start
+                (reservation) => reservation.start === start
               ).length
             : 0;
           return new ReservationSlotDetailed(
-            slot.start,
-            slot.end,
+            start,
+            end,
             slot.cost,
             slot.maxReservations,
-            reservationsCount,
-            staffDetailed
+            slot.maxReservations - reservationsCount,
+            staff
           );
         }),
-      ]));
+      ];
     })
   );
+}
 
-  return new Map(
-    Array.from(mappedSchedules.flatMap(map => Array.from(map.entries())),
-      ([date, slots]) => [
-        date,
-        slots.flat(),
-      ]
-    )
-  );
+class SchedulesByServiceDTO {
+  constructor(public staff: ScheduleStaff, public schedule: ScheduleDTO) {}
+}
+
+class ReservationSlotDTO {
+  constructor(
+    public start: string,
+    public end: string,
+    public cost: number,
+    public maxReservations: number
+  ) {}
+}
+
+class ScheduleDTO {
+  [date: string]: ReservationSlotDTO[];
+}
+
+class ReservationsDTO {
+  [date: string]: Reservation[];
 }
 
 // TODO: remove stubbings and adjust api calls when server implements attributes
@@ -311,6 +350,7 @@ class RealStaff {
     public id: number,
     public sub: string,
     public name: string,
+    public description: string,
     public business: StaffBusiness,
     public active: boolean
   ) {}
@@ -321,6 +361,7 @@ async function stubStaff(staff: RealStaff) {
     staff.id,
     staff.sub,
     staff.name,
+    staff.description,
     faker.image.url(),
     faker.number.float({ fractionDigits: 2, min: 1, max: 5 }),
     staff.business,
