@@ -11,12 +11,12 @@ export default function ServicesPage() {
     return withErrorAlert(() => activeServices(page, 10));
   }
 
-  async function fetchDataWithName(name: string, page: number): Promise<Page<ServiceDetailed>> {
+  async function fetchDataWithName(_: string, page: number): Promise<Page<ServiceDetailed>> {
     // TODO: adjust, when server implements search
     return await fetchData(page);
   }
 
   return (
-    <ServiceList pageSupplier={fetchData} searchPageSupplier={fetchDataWithName} showBusiness={true}/>
+    <ServiceList searchPageSupplier={fetchDataWithName} showBusiness={true}/>
   );
 }

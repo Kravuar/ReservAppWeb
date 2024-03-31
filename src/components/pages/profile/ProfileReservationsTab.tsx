@@ -29,7 +29,8 @@ export default function ProfileReservationsTab({
   ) {
     setSelectedDate(newSelectedDate);
     reservationsSupplier(newStartOfWeek, newEndOfWeek)
-      .then(setSchedule);
+      .then(setSchedule)
+      .catch(() => {});
   }
 
   return (

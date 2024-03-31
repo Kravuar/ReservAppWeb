@@ -33,12 +33,14 @@ export default function ReservationCard({
 
   function cancelHandler() {
     onCancelReservation(reservation.id)
-      .then(() => setEnabled(false));
+      .then(() => setEnabled(false))
+      .catch(() => {});;
   }
 
   function restoreHandler() {
     onReservationRestore(reservation.id)
-      .then(() => setEnabled(true));
+      .then(() => setEnabled(true))
+      .catch(() => {});;
   }
 
   function handleReservationAction() {

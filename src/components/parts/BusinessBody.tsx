@@ -7,11 +7,9 @@ import ServiceList from "./ServiceList";
 
 export default function BusinessBody({
   business,
-  serviceSupplier,
   searchServicesPageSupplier,
 }: {
   business: BusinessDetailed;
-  serviceSupplier: (page: number) => Promise<Page<ServiceDetailed>>;
   searchServicesPageSupplier: (
     name: string,
     page: number
@@ -37,7 +35,6 @@ export default function BusinessBody({
             Услуги бизнеса
           </Typography>
           <ServiceList
-            pageSupplier={serviceSupplier}
             searchPageSupplier={searchServicesPageSupplier}
             showBusiness={false}
           />

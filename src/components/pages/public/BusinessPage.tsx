@@ -41,7 +41,6 @@ export default function BusinessPage() {
     return (
       <BusinessBody
         business={business}
-        serviceSupplier={(page) => fetchData(page)}
         searchServicesPageSupplier={(name, page) =>
           fetchDataWithName(name, page)
         }
