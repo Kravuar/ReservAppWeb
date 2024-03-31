@@ -38,7 +38,7 @@ export default function ServiceBody({
           variant="scrollable"
           value={tab}
           onChange={(_, value) => setTab(value)}
-          sx={{ borderRight: 1, borderColor: "divider", tabSize: 50 }}
+          sx={{ tabSize: 50 }}
         >
           <Tab label="Расписание" />
           <Tab label="Сотрудники" />

@@ -1,5 +1,5 @@
 import OktaAuth from "@okta/okta-auth-js";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 
 export const CALLBACK_PATH = process.env.REACT_APP_CALLBACK_PATH;
 const CLIENT_ID = process.env.REACT_APP_CLIENT_ID;
@@ -20,6 +20,21 @@ const config = {
 
 export const oktaAuth = new OktaAuth(config);
 
+axios.interceptors.response.use(
+  (response) => response,
+  (error: AxiosError) => {
+    if (error.response?.data) {
+      const errorMessage = (error.response.data || error.message) as string;
+
+      const newError = new Error(errorMessage);
+      newError.stack = error.stack;
+
+      return Promise.reject(newError);
+    }
+
+    return Promise.reject(error);
+  }
+);
 axios.defaults.baseURL = process.env.REACT_APP_BACKEND;
 axios.interceptors.request.use((request) => {
   const authState = oktaAuth.authStateManager.getAuthState();

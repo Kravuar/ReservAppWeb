@@ -298,11 +298,11 @@ export async function reserveSlot(
   staffId: number,
   serviceId: number,
   dateTime: LocalDateTime
-) {
-  const response = await axios.post<Reservation>(
+): Promise<void> {
+  await axios.post<Reservation>(
     `schedule/api-v1/reservation/management/reserve/${staffId}/${serviceId}/${dateTime}`
   );
-  return response.data;
+  return;
 }
 
 async function scheduleToDetailed(

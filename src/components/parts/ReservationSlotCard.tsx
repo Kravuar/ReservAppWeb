@@ -9,14 +9,16 @@ import {
   Box,
   Rating,
   IconButton,
+  Skeleton,
 } from "@mui/material";
 import {
   AccessTime,
-  Check,
   CheckCircle,
   EditCalendar,
   Money,
 } from "@mui/icons-material";
+import { useState } from "react";
+import { useAlert } from "../util/Alert";
 
 export default function ReservationSlotCard({
   reservationSlot,
@@ -24,9 +26,19 @@ export default function ReservationSlotCard({
   onReserve,
 }: {
   reservationSlot: ReservationSlotDetailed;
-  onReserve: () => void;
+  onReserve: () => Promise<void>;
   showStaff?: boolean;
 }) {
+  const { showAlert } = useAlert();
+  const [reservationsLeft, setReservationsLeft] = useState<number>(reservationSlot.reservationsLeft);
+  const [staffImageLoaded, setStaffImageLoaded] = useState<boolean>(false);
+
+  function reserveHandler() {
+    onReserve()
+      .then(() => {showAlert('Reservation created', 'success'); setReservationsLeft(reservationsLeft - 1)})
+      .catch(error => showAlert(error.message, 'error'));
+  }
+
   return (
     <Card sx={{ m: 2 }}>
       <CardHeader
@@ -55,7 +67,18 @@ export default function ReservationSlotCard({
         subheader={
           reservationSlot.staff && (
             <Box display="flex" flexDirection={"row"} alignItems="center">
-              <Avatar src={reservationSlot.staff.picture} />
+              <Avatar
+                src={reservationSlot.staff.picture}
+                slotProps={{
+                  img: {
+                    onLoad: () => setStaffImageLoaded(true),
+                  },
+                }}
+              >
+                {!staffImageLoaded && (
+                  <Skeleton variant="circular" width={40} height={40} />
+                )}
+              </Avatar>
               <Rating value={reservationSlot.staff.rating} readOnly />
             </Box>
           )
@@ -81,13 +104,13 @@ export default function ReservationSlotCard({
         </Typography>
         <Box display="flex" flexDirection="row" alignItems="center">
           <Typography variant="body1" color="textSecondary">
-            {`Свободные места: ${reservationSlot.reservationsLeft}/${reservationSlot.maxReservations}`}
+            {`Свободные места: ${reservationsLeft}/${reservationSlot.maxReservations}`}
           </Typography>
           <IconButton
             aria-label="reserve"
             aria-haspopup="true"
-            onClick={onReserve}
-            color={reservationSlot.reservationsLeft > 0 ? "inherit" : "warning"}
+            onClick={reserveHandler}
+            color={reservationsLeft > 0 ? "inherit" : "warning"}
           >
             <CheckCircle />
           </IconButton>

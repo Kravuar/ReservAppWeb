@@ -7,7 +7,7 @@ export type ReserveAction = (
   staffId: number,
   date: LocalDate,
   start: LocalTime
-) => void;
+) => Promise<void>;
 
 export default function ScheduleBody({
   schedule,
@@ -18,8 +18,8 @@ export default function ScheduleBody({
   onReserve: ReserveAction;
   showStaff?: boolean;
 }) {
-  function reserveHandler(date: LocalDate, slot: ReservationSlotDetailed) {
-    onReserve(slot.staff.id, date, slot.start);
+  async function reserveHandler(date: LocalDate, slot: ReservationSlotDetailed): Promise<void> {
+    return onReserve(slot.staff.id, date, slot.start);
   }
 
   return (

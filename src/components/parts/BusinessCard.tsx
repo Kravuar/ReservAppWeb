@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   Box,
   Button,
@@ -7,24 +6,20 @@ import {
   CardMedia,
   Rating,
   Typography,
-  Skeleton,
 } from "@mui/material";
 import { Link } from "react-router-dom";
 import { BusinessDetailed } from "../../domain/Business";
 
 export default function BusinessCard({ business }: { business: BusinessDetailed }) {
-  const [businessImageLoaded, setBusinessImageLoaded] = useState(false);
 
   return (
     <Card sx={{ display: "flex", marginBottom: 2, boxShadow: 3 }}>
       {/* Business Picture on the left part */}
-      {!businessImageLoaded && <Skeleton variant="text" width="30%" />}
       <CardMedia
         component="img"
         sx={{ width: "30%" }}
         image={business.picture}
         alt={business.name}
-        onLoad={() => setBusinessImageLoaded(true)}
       />
       {/* Business Details on the right part */}
       <Box sx={{ display: "flex", flexDirection: "column", width: "70%"}}>
