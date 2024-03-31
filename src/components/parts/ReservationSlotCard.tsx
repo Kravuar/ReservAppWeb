@@ -10,12 +10,18 @@ import {
   Rating,
   IconButton,
 } from "@mui/material";
-import { AccessTime, EditCalendar, Money } from "@mui/icons-material";
+import {
+  AccessTime,
+  Check,
+  CheckCircle,
+  EditCalendar,
+  Money,
+} from "@mui/icons-material";
 
 export default function ReservationSlotCard({
   reservationSlot,
   showStaff,
-  onReserve
+  onReserve,
 }: {
   reservationSlot: ReservationSlotDetailed;
   onReserve: () => void;
@@ -24,16 +30,7 @@ export default function ReservationSlotCard({
   return (
     <Card sx={{ m: 2 }}>
       <CardHeader
-        avatar={
-          <IconButton
-          aria-label="login"
-          aria-haspopup="true"
-          onClick={onReserve}
-          color="inherit"
-          >
-            <EditCalendar />
-          </IconButton>
-        }
+        avatar={<EditCalendar />}
         title={
           showStaff && reservationSlot.staff ? (
             <Typography
@@ -82,9 +79,19 @@ export default function ReservationSlotCard({
           <Money sx={{ mr: 1 }} />
           {`Стоимость: ${reservationSlot.cost}`}
         </Typography>
-        <Typography variant="body1" color="textSecondary">
-          {`Свободные места: ${reservationSlot.reservationsLeft}/${reservationSlot.maxReservations}`}
-        </Typography>
+        <Box display="flex" flexDirection="row" alignItems="center">
+          <Typography variant="body1" color="textSecondary">
+            {`Свободные места: ${reservationSlot.reservationsLeft}/${reservationSlot.maxReservations}`}
+          </Typography>
+          <IconButton
+            aria-label="reserve"
+            aria-haspopup="true"
+            onClick={onReserve}
+            color={reservationSlot.reservationsLeft > 0 ? "inherit" : "warning"}
+          >
+            <CheckCircle />
+          </IconButton>
+        </Box>
       </CardContent>
     </Card>
   );

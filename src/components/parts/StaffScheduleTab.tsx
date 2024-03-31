@@ -104,6 +104,7 @@ export default function StaffScheduleTab({
             scrollButtons="auto"
             aria-label="staff tabs"
             orientation="vertical"
+            sx={{display: "flex", flexGrow: 1}}
           >
             {staffList?.content.map((staff) => (
               <Tab

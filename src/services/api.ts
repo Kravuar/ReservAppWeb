@@ -7,6 +7,7 @@ import { Staff, StaffBusiness } from "../domain/Staff";
 import {
   Reservation,
   ReservationSlotDetailed,
+  ScheduleService,
   ScheduleStaff,
 } from "../domain/Schedule";
 import { LocalDate, LocalDateTime, LocalTime } from "@js-joda/core";
@@ -26,6 +27,27 @@ async function detailedService(service: Service) {
     faker.number.float({ fractionDigits: 2, min: 1, max: 5 }), // TODO: adjust, when server implements attributes
     service.name,
     service.description
+  );
+}
+
+function combineSlots(
+  slots: Array<[string, ReservationSlotDetailed[]]>
+): Map<LocalDate, ReservationSlotDetailed[]> {
+  const combined = slots.reduce((acc, [dateStr, slots]) => {
+    const existingSlots = acc.get(dateStr) || [];
+    acc.set(dateStr, [...existingSlots, ...slots]);
+    return acc;
+  }, new Map<string, ReservationSlotDetailed[]>());
+
+  combined.forEach((slots) =>
+    slots.sort((first, second) => first.start.compareTo(second.start))
+  );
+
+  return new Map(
+    Array.from(combined.entries(), ([dateStr, slots]) => [
+      LocalDate.parse(dateStr),
+      slots,
+    ])
   );
 }
 
@@ -181,7 +203,19 @@ export async function reservationsByServiceAndStaff(
   return new Map(
     Array.from(Object.keys(reservations), (date) => [
       LocalDate.parse(date),
-      reservations[date],
+      reservations[date].map(
+        (reservation) =>
+          new Reservation(
+            reservation.id,
+            LocalDate.parse(reservation.date),
+            LocalTime.parse(reservation.start),
+            LocalTime.parse(reservation.end),
+            reservation.staff,
+            reservation.service,
+            reservation.active,
+            LocalDateTime.parse(reservation.createdAt)
+          )
+      ),
     ])
   );
 }
@@ -198,7 +232,19 @@ export async function reservationsByService(
   return new Map(
     Array.from(Object.keys(reservations), (date) => [
       LocalDate.parse(date),
-      reservations[date],
+      reservations[date].map(
+        (reservation) =>
+          new Reservation(
+            reservation.id,
+            LocalDate.parse(reservation.date),
+            LocalTime.parse(reservation.start),
+            LocalTime.parse(reservation.end),
+            reservation.staff,
+            reservation.service,
+            reservation.active,
+            LocalDateTime.parse(reservation.createdAt)
+          )
+      ),
     ])
   );
 }
@@ -230,29 +276,29 @@ export async function scheduleByService(
     `schedule/api-v1/retrieval/by-service/${serviceId}/${from}/${to}`
   );
   const reservations = await reservationsByService(serviceId, from, to);
+
   const mappedSchedules = await Promise.all(
     response.data.map(async ({ staff, schedule }) =>
       scheduleToDetailed(staff.id, schedule, reservations)
     )
   );
 
-  console.log(mappedSchedules);
-  const flattened = new Map(
+  // Bullshit, js joda sucks
+  const bullshit = combineSlots(
     Array.from(
       mappedSchedules.flatMap((map) => Array.from(map.entries())),
-      ([date, slots]) => [date, slots.flat()]
+      ([date, slots]) => [date.toString(), slots.flat()]
     )
   );
-  console.log(flattened)
-  flattened.forEach((slots) =>
-    slots.sort((first, second) => first.start.compareTo(second.start))
-  );
-  console.log(flattened);
 
-  return flattened;
+  return bullshit;
 }
 
-export async function reserveSlot(staffId: number, serviceId: number, dateTime: LocalDateTime) {
+export async function reserveSlot(
+  staffId: number,
+  serviceId: number,
+  dateTime: LocalDateTime
+) {
   const response = await axios.post<Reservation>(
     `schedule/api-v1/reservation/management/reserve/${staffId}/${serviceId}/${dateTime}`
   );
@@ -273,12 +319,17 @@ async function scheduleToDetailed(
       return [
         date,
         slotsDTO.map((slot) => {
-          const sameDayReservations = reservations.get(date);
+          const sameDayReservations = jodaTsMapIsRetardedGet(
+            date,
+            reservations
+          );
           const start = LocalTime.parse(slot.start);
           const end = LocalTime.parse(slot.end);
           const reservationsCount = sameDayReservations
             ? sameDayReservations.filter(
-                (reservation) => reservation.start === start
+                (reservation) =>
+                  reservation.staff.id === staffId &&
+                  reservation.start.equals(start)
               ).length
             : 0;
           return new ReservationSlotDetailed(
@@ -308,12 +359,33 @@ class ReservationSlotDTO {
   ) {}
 }
 
+class ReservationDTO {
+  constructor(
+    public id: number,
+    public date: string,
+    public start: string,
+    public end: string,
+    public staff: ScheduleStaff,
+    public service: ScheduleService,
+    public active: boolean,
+    public createdAt: string
+  ) {}
+}
+
 class ScheduleDTO {
   [date: string]: ReservationSlotDTO[];
 }
 
 class ReservationsDTO {
-  [date: string]: Reservation[];
+  [date: string]: ReservationDTO[];
+}
+
+export function jodaTsMapIsRetardedGet<V>(
+  date: LocalDate,
+  map: Map<LocalDate, V>
+): V | null {
+  for (var entry of map.entries()) if (entry[0].equals(date)) return entry[1];
+  return null;
 }
 
 // TODO: remove stubbings and adjust api calls when server implements attributes

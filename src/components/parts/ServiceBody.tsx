@@ -31,12 +31,10 @@ export default function ServiceBody({
       display="flex"
       flexDirection="column"
       justifyContent="space-between"
-      // alignItems="center"
     >
       <ServiceCard service={service} />
-      <Box sx={{ display: "flex", height: "100%" }}>
+      <Box sx={{ display: "flex", flexDirection: "column" }}>
         <Tabs
-          orientation="vertical"
           variant="scrollable"
           value={tab}
           onChange={(_, value) => setTab(value)}
