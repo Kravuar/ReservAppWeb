@@ -1,3 +1,4 @@
+import { Service } from "./Service";
 import { Staff } from "./Staff";
 import { LocalDate, LocalDateTime, LocalTime } from "@js-joda/core";
 
@@ -30,6 +31,19 @@ export class ScheduleBusiness {
 
 export class ScheduleStaff {
   constructor(public id: number, public business: ScheduleBusiness) {}
+}
+
+export class ReservationDetailed {
+  constructor(
+    public id: number,
+    public date: LocalDate,
+    public start: LocalTime,
+    public end: LocalTime,
+    public staff: Staff,
+    public service: Service,
+    public active: boolean,
+    public createdAt: LocalDateTime
+  ) {}
 }
 
 export class Reservation {

@@ -2,10 +2,13 @@ import ServiceList from "../../parts/ServiceList";
 import { Page } from "../../../domain/Page";
 import { ServiceDetailed } from "../../../domain/Service";
 import { activeServices } from "../../../services/api";
+import { useAlert } from "../../util/Alert";
 
 export default function ServicesPage() {
+  const { withErrorAlert } = useAlert();
+  
   async function fetchData(page: number): Promise<Page<ServiceDetailed>> {
-    return activeServices(page, 10);
+    return withErrorAlert(() => activeServices(page, 10));
   }
 
   async function fetchDataWithName(name: string, page: number): Promise<Page<ServiceDetailed>> {

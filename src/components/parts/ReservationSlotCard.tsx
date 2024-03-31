@@ -18,7 +18,6 @@ import {
   Money,
 } from "@mui/icons-material";
 import { useState } from "react";
-import { useAlert } from "../util/Alert";
 
 export default function ReservationSlotCard({
   reservationSlot,
@@ -29,14 +28,13 @@ export default function ReservationSlotCard({
   onReserve: () => Promise<void>;
   showStaff?: boolean;
 }) {
-  const { showAlert } = useAlert();
   const [reservationsLeft, setReservationsLeft] = useState<number>(reservationSlot.reservationsLeft);
   const [staffImageLoaded, setStaffImageLoaded] = useState<boolean>(false);
 
   function reserveHandler() {
     onReserve()
-      .then(() => {showAlert('Reservation created', 'success'); setReservationsLeft(reservationsLeft - 1)})
-      .catch(error => showAlert(error.message, 'error'));
+      .then(() => setReservationsLeft(reservationsLeft - 1))
+      .catch(e => console.log(e));
   }
 
   return (
@@ -44,7 +42,7 @@ export default function ReservationSlotCard({
       <CardHeader
         avatar={<EditCalendar />}
         title={
-          showStaff && reservationSlot.staff ? (
+          showStaff ? (
             <Typography
               variant="h6"
               color="textSecondary"

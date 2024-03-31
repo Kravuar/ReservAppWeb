@@ -6,6 +6,7 @@ import { Service, ServiceDetailed } from "../domain/Service";
 import { Staff, StaffBusiness } from "../domain/Staff";
 import {
   Reservation,
+  ReservationDetailed,
   ReservationSlotDetailed,
   ScheduleService,
   ScheduleStaff,
@@ -14,20 +15,6 @@ import { LocalDate, LocalDateTime, LocalTime } from "@js-joda/core";
 
 function paginationAdjustment(page: number): number {
   return page - 1;
-}
-
-async function detailedService(service: Service) {
-  const business = await businessById(service.business.id);
-
-  return new ServiceDetailed(
-    service.id,
-    business,
-    service.active,
-    faker.image.url(), // TODO: adjust, when server implements attributes
-    faker.number.float({ fractionDigits: 2, min: 1, max: 5 }), // TODO: adjust, when server implements attributes
-    service.name,
-    service.description
-  );
 }
 
 function combineSlots(
@@ -52,17 +39,17 @@ function combineSlots(
 }
 
 export async function businessById(id: number): Promise<BusinessDetailed> {
-  const response = await axios.get<RealBusiness>(
+  const response = await axios.get<BusinessDTO>(
     `business/api-v1/retrieval/by-id/${id}`
   );
-  return stubBusiness(response.data);
+  return detailedBusiness(response.data);
 }
 
 export async function myBusinessById(id: number): Promise<BusinessDetailed> {
-  const response = await axios.get<RealBusiness>(
+  const response = await axios.get<BusinessDTO>(
     `business/api-v1/retrieval/my/by-id/${id}`
   );
-  return stubBusiness(response.data);
+  return detailedBusiness(response.data);
 }
 
 export async function businessesByOwner(
@@ -70,14 +57,14 @@ export async function businessesByOwner(
   page: number,
   pageSize: number
 ): Promise<Page<BusinessDetailed>> {
-  const response = await axios.get<Page<RealBusiness>>(
+  const response = await axios.get<Page<BusinessDTO>>(
     `business/api-v1/retrieval/by-owner/${ownerSub}/${paginationAdjustment(
       page
     )}/${pageSize}`
   );
 
   return {
-    content: response.data.content.map(stubBusiness),
+    content: response.data.content.map(detailedBusiness),
     totalPages: response.data.totalPages,
   };
 }
@@ -86,12 +73,12 @@ export async function myBusinesses(
   page: number,
   pageSize: number
 ): Promise<Page<BusinessDetailed>> {
-  const response = await axios.get<Page<RealBusiness>>(
+  const response = await axios.get<Page<BusinessDTO>>(
     `business/api-v1/retrieval/my/${paginationAdjustment(page)}/${pageSize}`
   );
 
   return {
-    content: response.data.content.map(stubBusiness),
+    content: response.data.content.map(detailedBusiness),
     totalPages: response.data.totalPages,
   };
 }
@@ -100,12 +87,12 @@ export async function activeBusinesses(
   page: number,
   pageSize: number
 ): Promise<Page<BusinessDetailed>> {
-  const response = await axios.get<Page<RealBusiness>>(
+  const response = await axios.get<Page<BusinessDTO>>(
     `business/api-v1/retrieval/active/${paginationAdjustment(page)}/${pageSize}`
   );
 
   return {
-    content: response.data.content.map(stubBusiness),
+    content: response.data.content.map(detailedBusiness),
     totalPages: response.data.totalPages,
   };
 }
@@ -168,10 +155,10 @@ export async function myServicesByBusiness(
 }
 
 export async function staffById(staffId: number): Promise<Staff> {
-  const response = await axios.get<RealStaff>(
+  const response = await axios.get<StaffDTO>(
     `staff/api-v1/retrieval/by-id/${staffId}`
   );
-  return stubStaff(response.data);
+  return detailedStaff(response.data);
 }
 
 export async function staffByBusinessId(
@@ -179,13 +166,13 @@ export async function staffByBusinessId(
   page: number,
   pageSize: number
 ): Promise<Page<Staff>> {
-  const response = await axios.get<Page<RealStaff>>(
+  const response = await axios.get<Page<StaffDTO>>(
     `staff/api-v1/retrieval/by-business/${businessId}/${paginationAdjustment(
       page
     )}/${pageSize}`
   );
   return {
-    content: await Promise.all(response.data.content.map(stubStaff)),
+    content: await Promise.all(response.data.content.map(detailedStaff)),
     totalPages: response.data.totalPages,
   };
 }
@@ -203,19 +190,7 @@ export async function reservationsByServiceAndStaff(
   return new Map(
     Array.from(Object.keys(reservations), (date) => [
       LocalDate.parse(date),
-      reservations[date].map(
-        (reservation) =>
-          new Reservation(
-            reservation.id,
-            LocalDate.parse(reservation.date),
-            LocalTime.parse(reservation.start),
-            LocalTime.parse(reservation.end),
-            reservation.staff,
-            reservation.service,
-            reservation.active,
-            LocalDateTime.parse(reservation.createdAt)
-          )
-      ),
+      reservations[date].map(detailedReservation),
     ])
   );
 }
@@ -232,19 +207,36 @@ export async function reservationsByService(
   return new Map(
     Array.from(Object.keys(reservations), (date) => [
       LocalDate.parse(date),
-      reservations[date].map(
-        (reservation) =>
-          new Reservation(
-            reservation.id,
-            LocalDate.parse(reservation.date),
-            LocalTime.parse(reservation.start),
-            LocalTime.parse(reservation.end),
-            reservation.staff,
-            reservation.service,
-            reservation.active,
-            LocalDateTime.parse(reservation.createdAt)
-          )
-      ),
+      reservations[date].map(detailedReservation),
+    ])
+  );
+}
+
+export async function myReservations(
+  from: LocalDate,
+  to: LocalDate
+): Promise<Map<LocalDate, ReservationDetailed[]>> {
+  const response = await axios.get<ReservationsDTO>(
+    `schedule/api-v1/reservation/retrieval/my/${from}/${to}`
+  );
+  const reservations = response.data;
+
+  const dates = Object.keys(reservations);
+  const reservationData = await Promise.all(
+    dates.map(
+      async (date) =>
+        await Promise.all(
+          reservations[date]
+            .map(detailedReservation)
+            .map(megaDetailedReservation)
+        )
+    )
+  );
+
+  // Fuck it
+  return new Map(Array.from(dates, (date, index) => [
+      LocalDate.parse(date),
+      reservationData[index],
     ])
   );
 }
@@ -305,6 +297,20 @@ export async function reserveSlot(
   return;
 }
 
+export async function cancelReservation(reservationId: number) {
+  await axios.delete<Reservation>(
+    `schedule/api-v1/reservation/management/cancel/${reservationId}`
+  );
+  return;
+}
+
+export async function restoreReservation(reservationId: number) {
+  await axios.post<Reservation>(
+    `schedule/api-v1/reservation/management/restore/${reservationId}`
+  );
+  return;
+}
+
 async function scheduleToDetailed(
   staffId: number,
   schedule: ScheduleDTO,
@@ -344,6 +350,27 @@ async function scheduleToDetailed(
       ];
     })
   );
+}
+
+class BusinessDTO {
+  constructor(
+    public id: number,
+    public name: string,
+    public ownerSub: string,
+    public active: boolean,
+    public description?: string
+  ) {}
+}
+
+class StaffDTO {
+  constructor(
+    public id: number,
+    public sub: string,
+    public name: string,
+    public description: string,
+    public business: StaffBusiness,
+    public active: boolean
+  ) {}
 }
 
 class SchedulesByServiceDTO {
@@ -395,17 +422,52 @@ export function jodaTsMapIsRetardedGet<V>(
 // ===============================================================================
 //
 
-class RealBusiness {
-  constructor(
-    public id: number,
-    public name: string,
-    public ownerSub: string,
-    public active: boolean,
-    public description?: string
-  ) {}
+async function detailedService(service: Service) {
+  const business = await businessById(service.business.id);
+
+  return new ServiceDetailed(
+    service.id,
+    business,
+    service.active,
+    faker.image.url(),
+    faker.number.float({ fractionDigits: 2, min: 1, max: 5 }),
+    service.name,
+    service.description
+  );
 }
 
-function stubBusiness(business: RealBusiness): BusinessDetailed {
+function detailedReservation(reservation: ReservationDTO): Reservation {
+  return new Reservation(
+    reservation.id,
+    LocalDate.parse(reservation.date),
+    LocalTime.parse(reservation.start),
+    LocalTime.parse(reservation.end),
+    reservation.staff,
+    reservation.service,
+    reservation.active,
+    LocalDateTime.parse(reservation.createdAt)
+  );
+}
+
+async function megaDetailedReservation(
+  reservation: Reservation
+): Promise<ReservationDetailed> {
+  const staff = await staffById(reservation.staff.id);
+  const service = await serviceById(reservation.service.id);
+
+  return new ReservationDetailed(
+    reservation.id,
+    reservation.date,
+    reservation.start,
+    reservation.end,
+    staff,
+    service,
+    reservation.active,
+    reservation.createdAt
+  );
+}
+
+function detailedBusiness(business: BusinessDTO): BusinessDetailed {
   return new BusinessDetailed(
     business.id,
     business.name,
@@ -417,18 +479,7 @@ function stubBusiness(business: RealBusiness): BusinessDetailed {
   );
 }
 
-class RealStaff {
-  constructor(
-    public id: number,
-    public sub: string,
-    public name: string,
-    public description: string,
-    public business: StaffBusiness,
-    public active: boolean
-  ) {}
-}
-
-async function stubStaff(staff: RealStaff) {
+async function detailedStaff(staff: StaffDTO) {
   return new Staff(
     staff.id,
     staff.sub,

@@ -12,6 +12,8 @@ interface AlertState {
 
 interface AlertContextType {
   showAlert: (message: string, severity?: AlertState['severity']) => void;
+  withErrorAlert: <T>(promise: () => Promise<T>, severity?: AlertState['severity']) => Promise<T>;
+  withAlert: <T>(promise: () => Promise<T>, message: string, severity?: AlertState['severity']) => Promise<T>;
 }
 
 const AlertContext = createContext<AlertContextType | undefined>(undefined);
@@ -35,7 +37,15 @@ export function AlertProvider({ children }: AlertProviderProps) {
     setAlert({ open: true, message, severity });
   }, []);
 
-  const handleClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
+  async function withErrorAlert<T>(promise: () => Promise<T>, severity: AlertState['severity'] = 'error'): Promise<T> {
+    return promise().catch(error => {showAlert(error.message, severity); return Promise.reject(error)});
+  }
+
+  async function withAlert<T>(promise: () => Promise<T>, message: string, severity: AlertState['severity'] = 'info'): Promise<T> {
+    return promise().then((response) => {showAlert(message, severity); return Promise.resolve(response)});
+  }
+
+  const handleClose = (_?: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
       return;
     }
@@ -49,7 +59,7 @@ export function AlertProvider({ children }: AlertProviderProps) {
   );
 
   return (
-    <AlertContext.Provider value={{ showAlert }}>
+    <AlertContext.Provider value={{ showAlert, withErrorAlert, withAlert }}>
       {children}
       <Snackbar
         open={alert.open}

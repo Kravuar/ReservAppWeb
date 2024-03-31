@@ -45,8 +45,7 @@ export default function StaffScheduleTab({
 
   useEffect(() => {
     staffSupplier(staffPage, 10)
-      .then(setStaffList)
-      .catch((error) => alert(error));
+      .then(setStaffList);
   }, [staffPage, staffSupplier]);
 
   useEffect(() => {
@@ -69,8 +68,7 @@ export default function StaffScheduleTab({
     setSelectedDate(newSelectedDate);
     if (currentStaff)
       scheduleSupplier(currentStaff.id, newStartOfWeek, newEndOfWeek)
-        .then(setSchedule)
-        .catch((error) => alert(error));
+        .then(setSchedule);
   }
 
   return (

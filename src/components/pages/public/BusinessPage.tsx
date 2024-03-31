@@ -7,9 +7,11 @@ import ErrorPage from "../../util/ErrorPage";
 import { businessById, servicesByBusiness } from "../../../services/api";
 import { Page } from "../../../domain/Page";
 import { ServiceDetailed } from "../../../domain/Service";
+import { useAlert } from "../../util/Alert";
 
 export default function BusinessPage() {
   const id = Number(useParams<{ id: string }>().id);
+  const { withErrorAlert } = useAlert();
   const [business, setBusiness] = useState<BusinessDetailed | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,14 +22,17 @@ export default function BusinessPage() {
     }
     businessById(id)
       .then(setBusiness)
-      .catch((error) => alert(error));
+      .catch((error) => setError(error));
   }, [id]);
 
   async function fetchData(page: number): Promise<Page<ServiceDetailed>> {
-    return servicesByBusiness(id, page, 10);
+      return withErrorAlert(() => servicesByBusiness(id, page, 10));
   }
 
-  async function fetchDataWithName(name: string, page: number): Promise<Page<ServiceDetailed>> {
+  async function fetchDataWithName(
+    name: string,
+    page: number
+  ): Promise<Page<ServiceDetailed>> {
     // TODO: adjust, when server implements search
     return await fetchData(page);
   }
@@ -37,13 +42,13 @@ export default function BusinessPage() {
       <BusinessBody
         business={business}
         serviceSupplier={(page) => fetchData(page)}
-        searchServicesPageSupplier={(name, page) => fetchDataWithName(name, page)}
+        searchServicesPageSupplier={(name, page) =>
+          fetchDataWithName(name, page)
+        }
       />
     );
-  else if (error)
-    return <ErrorPage message={error} />;
-  else 
-    return <SkeletonBody />;
+  else if (error) return <ErrorPage message={error} />;
+  else return <SkeletonBody />;
 }
 
 function SkeletonBody() {

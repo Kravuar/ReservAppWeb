@@ -1,4 +1,3 @@
-import React from "react";
 import { ServiceDetailed } from "../../domain/Service";
 import ServiceCard from "./ServiceCard";
 import { Box, Tab, Tabs } from "@mui/material";
@@ -10,6 +9,7 @@ import ServiceScheduleTab, {
   ScheduleSupplier as ServiceScheduleSupplier,
 } from "./ServiceScheduleTab";
 import { ReserveAction } from "./ScheduleBody";
+import { useState } from "react";
 
 export default function ServiceBody({
   service,
@@ -24,7 +24,7 @@ export default function ServiceBody({
   staffSupplier: StaffSupplier;
   onReserve: ReserveAction;
 }) {
-  const [tab, setTab] = React.useState(0);
+  const [tab, setTab] = useState(0);
 
   return (
     <Box
