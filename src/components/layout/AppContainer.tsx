@@ -6,6 +6,7 @@ import ProfileBusinessTab from "../pages/profile/ProfileBusinessTab";
 import BusinessesPage from "../pages/public/BusinessesPage";
 import ServicePage from "../pages/public/ServicePage";
 import ServicesPage from "../pages/public/ServicesPage";
+import BusinessPage from "../pages/public/BusinessPage";
 
 export default function AppContainer() {
   return (
@@ -31,6 +32,7 @@ export default function AppContainer() {
               <Route index element={<ServicesPage />} />
             </Route>
             <Route path="businesses">
+              <Route path=":id" element={<BusinessPage />} />
               <Route index element={<BusinessesPage />} />
             </Route>
             <Route index element={<Navigate to="services" replace />} />

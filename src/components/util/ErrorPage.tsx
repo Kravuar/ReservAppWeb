@@ -9,7 +9,7 @@ export default function ErrorPage({ message }: { message?: string }) {
   };
 
   return (
-    <Container component="main" maxWidth="xs">
+    <Container component="main" maxWidth="xs" sx={{display: "flex", flexDirection:"column", alignItems: "center"}}>
       <Typography component="h1" variant="h4" align="center">
         Что-то пошло не так...
       </Typography>

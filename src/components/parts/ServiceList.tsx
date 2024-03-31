@@ -22,9 +22,11 @@ function search(
 export default function ServiceList({
   pageSupplier,
   searchPageSupplier,
+  showBusiness
 }: {
   pageSupplier: (page: number) => Promise<Page<ServiceDetailed>>;
   searchPageSupplier: (name: string, page: number) => Promise<Page<ServiceDetailed>>;
+  showBusiness: boolean;
 }) {
   const [pageNumber, setPageNumber] = useState(1);
   const [name, setName] = useState("");
@@ -75,7 +77,7 @@ export default function ServiceList({
       </Box>
       <Box sx={{ overflow: "auto" }}>
         {page?.content.map((service) => (
-          <ServiceCard key={service.id} service={service} />
+          <ServiceCard key={service.id} service={service} showBusiness={showBusiness}/>
         ))}
       </Box>
       {page?.content.length !== undefined && page?.content.length > 3 && (

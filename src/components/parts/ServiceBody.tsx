@@ -32,7 +32,7 @@ export default function ServiceBody({
       flexDirection="column"
       justifyContent="space-between"
     >
-      <ServiceCard service={service} />
+      <ServiceCard service={service} showBusiness/>
       <Box sx={{ display: "flex", flexDirection: "column" }}>
         <Tabs
           variant="scrollable"

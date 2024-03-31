@@ -13,7 +13,13 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import { ServiceDetailed } from "../../domain/Service";
 
-export default function ServiceCard({ service }: { service: ServiceDetailed }) {
+export default function ServiceCard({
+  service,
+  showBusiness
+}: {
+  service: ServiceDetailed;
+  showBusiness: boolean;
+}) {
   const [businessImageLoaded, setBusinessImageLoaded] = useState(false);
 
   return (
@@ -37,35 +43,40 @@ export default function ServiceCard({ service }: { service: ServiceDetailed }) {
             {/* Service Name and Rating */}
             <Box display="flex" flexDirection="row" alignItems="center">
               <Typography component="div" variant="h3">
-                <Button component={Link} to={`${service.id}`}>
+                <Button component={Link} to={`/home/services/${service.id}`}>
                   {service.name}
                 </Button>
               </Typography>
               <Rating value={service.rating} readOnly />
             </Box>
             {/* Business Info */}
-            <Box display="flex" flexDirection="column" alignItems="flex-end">
-              <Button component={Link} to={`/home/businesses/${service.business.id}`}>
-                <Box display="flex" flexDirection="row" alignItems="center">
-                  <Avatar
-                    src={service.business.picture}
-                    slotProps={{
-                      img: {
-                        onLoad: () => setBusinessImageLoaded(true),
-                      },
-                    }}
-                  >
-                    {!businessImageLoaded && (
-                      <Skeleton variant="circular" width={40} height={40} />
-                    )}
-                  </Avatar>
-                  <Typography marginLeft={1} variant="overline">
-                    {service.business.name}
-                  </Typography>
-                </Box>
-              </Button>
-              <Rating value={service.business.rating} readOnly size="small" />
-            </Box>
+            {showBusiness && (
+              <Box display="flex" flexDirection="column" alignItems="flex-end">
+                <Button
+                  component={Link}
+                  to={`/home/businesses/${service.business.id}`}
+                >
+                  <Box display="flex" flexDirection="row" alignItems="center">
+                    <Avatar
+                      src={service.business.picture}
+                      slotProps={{
+                        img: {
+                          onLoad: () => setBusinessImageLoaded(true),
+                        },
+                      }}
+                    >
+                      {!businessImageLoaded && (
+                        <Skeleton variant="circular" width={40} height={40} />
+                      )}
+                    </Avatar>
+                    <Typography marginLeft={1} variant="overline">
+                      {service.business.name}
+                    </Typography>
+                  </Box>
+                </Button>
+                <Rating value={service.business.rating} readOnly size="small" />
+              </Box>
+            )}
           </Box>
           <Box
             sx={{

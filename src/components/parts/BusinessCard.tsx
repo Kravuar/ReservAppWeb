@@ -25,7 +25,7 @@ export default function BusinessCard({ business }: { business: BusinessDetailed 
       <Box sx={{ display: "flex", flexDirection: "column", width: "70%"}}>
         <CardContent sx={{ flex: "1 0 auto" }}>
           <Typography component="div" variant="h5">
-            <Button component={Link} to={`/business?id=${business.id}`}>
+            <Button component={Link} to={`/home/businesses/${business.id}`}>
               {business.name}
             </Button>
           </Typography>

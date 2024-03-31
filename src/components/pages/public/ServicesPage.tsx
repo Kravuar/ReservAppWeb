@@ -14,6 +14,6 @@ export default function ServicesPage() {
   }
 
   return (
-    <ServiceList pageSupplier={fetchData} searchPageSupplier={fetchDataWithName}/>
+    <ServiceList pageSupplier={fetchData} searchPageSupplier={fetchDataWithName} showBusiness={true}/>
   );
 }
