@@ -29,7 +29,8 @@ export default function ServiceScheduleTab({
   ) {
     setSelectedDate(newSelectedDate);
     scheduleSupplier(newStartOfWeek, newEndOfWeek)
-      .then(setSchedule);
+      .then(setSchedule)
+      .catch(() => {});
   }
 
   return (

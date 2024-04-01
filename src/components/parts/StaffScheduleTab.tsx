@@ -68,7 +68,8 @@ export default function StaffScheduleTab({
     setSelectedDate(newSelectedDate);
     if (currentStaff)
       scheduleSupplier(currentStaff.id, newStartOfWeek, newEndOfWeek)
-        .then(setSchedule);
+        .then(setSchedule)
+        .catch(() => {})
   }
 
   return (

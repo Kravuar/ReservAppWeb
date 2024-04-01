@@ -14,8 +14,8 @@ import {
 import {
   AccessTime,
   Cancel,
-  CheckCircle,
   EditCalendar,
+  Restore,
 } from "@mui/icons-material";
 import { useState } from "react";
 
@@ -101,8 +101,8 @@ export default function ReservationCard({
           color="inherit"
         >
           {enabled 
-            ? <Cancel />
-            : <CheckCircle />
+            ? <Cancel color="error" />
+            : <Restore color="success"/>
           }
         </IconButton>
       </CardContent>
