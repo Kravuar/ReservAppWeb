@@ -11,12 +11,7 @@ import {
   IconButton,
   Skeleton,
 } from "@mui/material";
-import {
-  AccessTime,
-  Cancel,
-  EditCalendar,
-  Restore,
-} from "@mui/icons-material";
+import { AccessTime, Cancel, EditCalendar, Restore } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 
 export default function ReservationCard({
@@ -28,13 +23,9 @@ export default function ReservationCard({
   onCancelReservation: (reservationId: number) => Promise<void>;
   onReservationRestore: (reservationId: number) => Promise<void>;
 }) {
-  const [staffImageLoaded, setStaffImageLoaded] = useState<boolean>(false);
   const [enabled, setEnabled] = useState<boolean>(true);
 
-  useEffect(
-    () => setEnabled(reservation.active),
-    [reservation]
-  );
+  useEffect(() => setEnabled(reservation.active), [reservation]);
 
   function cancelHandler() {
     onCancelReservation(reservation.id)
@@ -49,10 +40,8 @@ export default function ReservationCard({
   }
 
   function handleReservationAction() {
-    if (enabled)
-      cancelHandler();
-    else
-      restoreHandler();
+    if (enabled) cancelHandler();
+    else restoreHandler();
   }
 
   return (
@@ -72,17 +61,8 @@ export default function ReservationCard({
         subheader={
           reservation.staff && (
             <Box display="flex" flexDirection={"row"} alignItems="center">
-              <Avatar
-                src={reservation.staff.picture}
-                slotProps={{
-                  img: {
-                    onLoad: () => setStaffImageLoaded(true),
-                  },
-                }}
-              >
-                {!staffImageLoaded && (
-                  <Skeleton variant="circular" width={40} height={40} />
-                )}
+              <Avatar src={reservation.staff.picture} sx={{ mr: 2 }}>
+                <Skeleton variant="circular" width={40} height={40} />
               </Avatar>
               <Rating value={reservation.staff.rating} readOnly />
             </Box>
@@ -105,10 +85,7 @@ export default function ReservationCard({
           onClick={handleReservationAction}
           color="inherit"
         >
-          {enabled 
-            ? <Cancel color="error" />
-            : <Restore color="success"/>
-          }
+          {enabled ? <Cancel color="error" /> : <Restore color="success" />}
         </IconButton>
       </CardContent>
     </Card>

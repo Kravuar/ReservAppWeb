@@ -2,21 +2,27 @@ import { Box, Tab, Tabs } from "@mui/material";
 import useAuthUser from "../../../services/oauth/useOAuthUser";
 import ProfileCard from "../../parts/ProfileCard";
 import { useState } from "react";
-import ProfileBusinessesTab from "./ProfileBusinessesTab";
+import ProfileBusinessesTab from "../../parts/ProfileBusinessesTab";
 import {
   myDetailedBusinesses,
   myReservations,
   cancelReservation,
   restoreReservation,
   createBusiness,
+  servicesByBusiness,
+  staffByBusinessId,
+  createService,
+  inviteStaff,
 } from "../../../services/api";
 import { BusinessDetailed, BusinessFormData } from "../../../domain/Business";
 import { Page } from "../../../domain/Page";
 import { ReservationDetailed } from "../../../domain/Schedule";
 import { LocalDate } from "@js-joda/core";
-import ProfileReservationsTab from "./ProfileReservationsTab";
-import ProfileReservationsToMeTab from "./ProfileReservationsToMeTab";
+import ProfileReservationsTab from "../../parts/ProfileReservationsTab";
+import ProfileReservationsToMeTab from "../../parts/ProfileReservationsToMeTab";
 import { useAlert } from "../../util/Alert";
+import { ServiceDetailed, ServiceFormData } from "../../../domain/Service";
+import { Staff } from "../../../domain/Staff";
 
 export default function ProfilePage() {
   const user = useAuthUser();
@@ -52,12 +58,51 @@ export default function ProfilePage() {
     return withErrorAlert(() => myReservations(from, to));
   }
 
-  async function businessCreationHandler(formData: BusinessFormData): Promise<BusinessDetailed> {
+  async function businessCreationHandler(
+    formData: BusinessFormData
+  ): Promise<BusinessDetailed> {
     return withAlert(
       () => withErrorAlert(() => createBusiness(formData)),
       "Бизнес создан",
       "success"
     );
+  }
+
+  async function servicePageSupplier(
+    businessId: number,
+    name: string,
+    page: number
+  ): Promise<Page<ServiceDetailed>> {
+    // TODO: adjust, when server implements search
+    return withErrorAlert(() => servicesByBusiness(businessId, page, 10));
+  }
+
+  async function staffPageSupplier(
+    businessId: number,
+    page: number
+  ): Promise<Page<Staff>> {
+    return withErrorAlert(() => staffByBusinessId(businessId, page, 10));
+  }
+
+  async function serviceCreationHandler(
+    formData: ServiceFormData
+  ): Promise<void> {
+    return withAlert(
+      () => withErrorAlert(() => createService(formData)),
+      "Услуга добавлена",
+      "success"
+    ).then();
+  }
+
+  async function staffInvitationHandler(
+    subject: string,
+    businessId: number
+  ): Promise<void> {
+    return withAlert(
+      () => withErrorAlert(() => inviteStaff(subject, businessId)),
+      "Сотрудник приглашён",
+      "success"
+    ).then();
   }
 
   return (
@@ -79,6 +124,10 @@ export default function ProfilePage() {
             <ProfileBusinessesTab
               pageSupplier={fetchBusinesses}
               businessCreationHandler={businessCreationHandler}
+              servicePageSupplier={servicePageSupplier}
+              staffPageSupplier={staffPageSupplier}
+              serviceCreationHandler={serviceCreationHandler}
+              staffInvitationHandler={staffInvitationHandler}
             />
           )}
           {tab === 1 && (

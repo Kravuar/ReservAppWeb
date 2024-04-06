@@ -22,6 +22,15 @@ export class Service {
   ) {}
 }
 
+export class ServiceFormData {
+  constructor(
+    public businessId: number,
+    public name: string,
+    public description?: string,
+    public picture?: File
+  ) {}
+}
+
 export class ServiceBusiness {
   constructor(public id: number, public ownerSub: string) {}
 }

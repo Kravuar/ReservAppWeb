@@ -8,14 +8,20 @@ import {
   IconButton,
   CardMedia,
   Typography,
+  CardActionArea,
 } from "@mui/material";
 import PhotoCamera from "@mui/icons-material/PhotoCamera";
-import { BusinessFormData } from "../../domain/Business";
 
-export default function BusinessForm({
+export interface ServiceFormData {
+  name: string;
+  description?: string;
+  picture?: File;
+}
+
+export default function ServiceForm({
   onSubmit,
 }: {
-  onSubmit: (business: BusinessFormData) => Promise<void>;
+  onSubmit: (business: ServiceFormData) => Promise<void>;
 }) {
   const [name, setName] = React.useState("");
   const [description, setDescription] = React.useState("");
@@ -23,7 +29,7 @@ export default function BusinessForm({
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    const formData: BusinessFormData = {
+    const formData: ServiceFormData = {
       name: name,
       description: description,
     };
@@ -44,7 +50,19 @@ export default function BusinessForm({
   };
 
   return (
-    <Card component="form" onSubmit={handleSubmit}>
+    <Card>
+      {picture && (
+        <CardMedia
+          component="img"
+          image={URL.createObjectURL(picture)}
+          sx={{
+            height: 200,
+            backgroundSize: "contain",
+            backgroundRepeat: "no-repeat",
+            backgroundPosition: "center",
+          }}
+        />
+      )}
       <CardContent>
         <TextField
           label="Название"
@@ -72,18 +90,6 @@ export default function BusinessForm({
           type="file"
           onChange={handlePictureChange}
         />
-        {picture && (
-          <CardMedia
-            component="img"
-            image={URL.createObjectURL(picture)}
-            sx={{
-              height: 200,
-              backgroundSize: "contain",
-              backgroundRepeat: "no-repeat",
-              backgroundPosition: "center",
-            }}
-          />
-        )}
         <label htmlFor="picture-input">
           <IconButton
             color="primary"

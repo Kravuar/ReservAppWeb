@@ -29,7 +29,6 @@ export default function ReservationSlotCard({
   showStaff?: boolean;
 }) {
   const [reservationsLeft, setReservationsLeft] = useState<number>(0);
-  const [staffImageLoaded, setStaffImageLoaded] = useState<boolean>(false);
 
   useEffect(
     () => setReservationsLeft(reservationSlot.reservationsLeft),
@@ -70,17 +69,8 @@ export default function ReservationSlotCard({
         subheader={
           reservationSlot.staff && (
             <Box display="flex" flexDirection={"row"} alignItems="center">
-              <Avatar
-                src={reservationSlot.staff.picture}
-                slotProps={{
-                  img: {
-                    onLoad: () => setStaffImageLoaded(true),
-                  },
-                }}
-              >
-                {!staffImageLoaded && (
-                  <Skeleton variant="circular" width={40} height={40} />
-                )}
+              <Avatar src={reservationSlot.staff.picture} sx={{ mr: 2 }}>
+                <Skeleton variant="circular" width={40} height={40} />
               </Avatar>
               <Rating value={reservationSlot.staff.rating} readOnly />
             </Box>

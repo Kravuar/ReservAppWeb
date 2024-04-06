@@ -1,3 +1,5 @@
+import { LocalDateTime } from "@js-joda/core";
+
 export class Staff {
   constructor(
     public id: number,
@@ -8,6 +10,22 @@ export class Staff {
     public rating: number,
     public business: StaffBusiness,
     public active: boolean
+  ) {}
+}
+
+export enum InvitationStatus {
+  ACCEPTED,
+  DECLINED,
+  WAITING,
+}
+
+export class StaffInvitation {
+  constructor(
+    public id: number,
+    public sub: string,
+    public business: StaffBusiness,
+    public createdAt: LocalDateTime,
+    public status: InvitationStatus
   ) {}
 }
 

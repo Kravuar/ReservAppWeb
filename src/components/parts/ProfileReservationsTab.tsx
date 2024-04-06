@@ -1,9 +1,9 @@
 import { LocalDate } from "@js-joda/core";
-import { ReservationDetailed } from "../../../domain/Schedule";
-import ReservationBody from "../../parts/ReservationsBody";
+import { ReservationDetailed } from "../../domain/Schedule";
+import ReservationBody from "./ReservationsBody";
 import { Box } from "@mui/material";
 import { useState } from "react";
-import WeekSelector from "../../parts/WeekSelector";
+import WeekSelector from "./WeekSelector";
 
 export default function ProfileReservationsTab({
   onCancelReservation,

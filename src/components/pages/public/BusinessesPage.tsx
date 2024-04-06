@@ -12,5 +12,5 @@ export default function BusinessesPage() {
       return withErrorAlert(() => activeDetailedBusinesses(page, 10));
   }
 
-  return <BusinessList pageSupplier={fetchData} CardComponent={BusinessCard} />;
+  return <BusinessList pageSupplier={fetchData} CardComponent={(business) => <BusinessCard business={business}/>} />;
 }

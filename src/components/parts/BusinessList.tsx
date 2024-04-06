@@ -1,4 +1,4 @@
-import { Box, Pagination } from "@mui/material";
+import { Box, Grid, Pagination } from "@mui/material";
 import { Page } from "../../domain/Page";
 import { BusinessDetailed } from "../../domain/Business";
 import { useEffect, useState } from "react";
@@ -6,11 +6,9 @@ import { useEffect, useState } from "react";
 export default function BusinessList({
   pageSupplier,
   CardComponent,
-  propsExtractor
 }: {
   pageSupplier: (page: number) => Promise<Page<BusinessDetailed>>;
-  CardComponent: React.ComponentType<{ business: BusinessDetailed }>;
-  propsExtractor?: (business: BusinessDetailed) => any;
+  CardComponent: React.ComponentType<BusinessDetailed>;
 }) {
   const [pageNumber, setPageNumber] = useState(1);
   const [page, setPage] = useState<Page<BusinessDetailed>>();
@@ -18,7 +16,7 @@ export default function BusinessList({
   useEffect(() => {
     pageSupplier(pageNumber)
       .then((page) => setPage(page))
-      .catch(() => setPage({ content: [], totalPages: 0 }));
+      .catch();
   }, [pageNumber, pageSupplier]);
 
   return (
@@ -33,14 +31,13 @@ export default function BusinessList({
           showLastButton
         />
       </Box>
-      <Box sx={{ overflow: "auto" }}>
-        {page?.content?.map((business) => {
-          const props = propsExtractor ? propsExtractor(business) : null;
-          return (
-            <CardComponent key={business.id} business={business} {...props} />
-          );
-        })}
-      </Box>
+      <Grid container rowSpacing={5} my={3}>
+        {page?.content?.map((business) => (
+          <Grid item xs={12} key={business.id}>
+            <CardComponent {...business} />
+          </Grid>
+        ))}
+      </Grid>
       {page?.content?.length !== undefined && page?.content?.length > 3 && (
         <Box sx={{ display: "flex", justifyContent: "center" }}>
           <Pagination

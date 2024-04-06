@@ -40,8 +40,8 @@ export default function ServiceBody({
           onChange={(_, value) => setTab(value)}
           sx={{ tabSize: 50 }}
         >
-          <Tab label="Расписание" />
-          <Tab label="Сотрудники" />
+          <Tab label="Полное расписание" />
+          <Tab label="Расписание по сотрудникам" />
           <Tab label="Отзывы" />
         </Tabs>
         <Box sx={{ padding: 3 }}>

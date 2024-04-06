@@ -16,3 +16,4 @@ Define a .env file with the following contents:
 ### TODOS:
 1. Make routes great again
 2. Alert is hella dumb. Rerenders whole app on show/hide alert, messes up everythin
+3. Code reusage

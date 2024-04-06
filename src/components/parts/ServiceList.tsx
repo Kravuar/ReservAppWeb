@@ -1,4 +1,4 @@
-import { Box, Button, Pagination, TextField } from "@mui/material";
+import { Box, Button, Grid, Pagination, TextField } from "@mui/material";
 import { Page } from "../../domain/Page";
 import { ServiceDetailed } from "../../domain/Service";
 import { useEffect, useState } from "react";
@@ -7,29 +7,23 @@ import SearchIcon from "@mui/icons-material/Search";
 export default function ServiceList({
   searchPageSupplier,
   CardComponent,
-  propsExtractor
 }: {
   searchPageSupplier: (
     name: string,
     page: number
   ) => Promise<Page<ServiceDetailed>>;
-  CardComponent: React.ComponentType<{ service: ServiceDetailed }>;
-  propsExtractor?: (business: ServiceDetailed) => any;
+  CardComponent: React.ComponentType<ServiceDetailed>;
 }) {
   const [pageNumber, setPageNumber] = useState(1);
   const [name, setName] = useState("");
   const [page, setPage] = useState<Page<ServiceDetailed>>();
 
   useEffect(() => {
-    searchPageSupplier(name, pageNumber)
-    .then(setPage)
-    .catch(() => setPage({content: [], totalPages: 0}));
+    searchPageSupplier(name, pageNumber).then(setPage).catch();
   }, [name, pageNumber, searchPageSupplier]);
 
   function handleSearchClick() {
-    searchPageSupplier(name, pageNumber)
-    .then(setPage)
-    .catch(() => setPage({content: [], totalPages: 0}));
+    searchPageSupplier(name, pageNumber).then(setPage).catch();
   }
 
   return (
@@ -39,7 +33,6 @@ export default function ServiceList({
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          marginBottom: 2,
           paddingX: 3,
         }}
       >
@@ -67,14 +60,13 @@ export default function ServiceList({
           showLastButton
         />
       </Box>
-      <Box sx={{ overflow: "auto" }}>
-        {page?.content?.map((service) => {
-            const props = propsExtractor ? propsExtractor(service) : null;
-            return (
-              <CardComponent key={service.id} service={service} {...props}/>
-            )
-          })}
-      </Box>
+      <Grid container rowSpacing={5} my={3}>
+        {page?.content?.map((service) => (
+          <Grid item xs={12} key={service.id}>
+            <CardComponent {...service} />
+          </Grid>
+        ))}
+      </Grid>
       {page?.content.length !== undefined && page?.content.length > 3 && (
         <Box sx={{ display: "flex", justifyContent: "center" }}>
           <Pagination

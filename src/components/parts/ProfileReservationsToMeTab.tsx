@@ -1,5 +1,5 @@
 import { LocalDate } from "@js-joda/core";
-import { Reservation } from "../../../domain/Schedule";
+import { Reservation } from "../../domain/Schedule";
 import { Typography } from "@mui/material";
 
 export default function ProfileReservationsTab({

@@ -37,7 +37,7 @@ export default function BusinessBody({
           </Typography>
           <ServiceList
             searchPageSupplier={searchServicesPageSupplier}
-            CardComponent={ServiceCard}
+            CardComponent={(service) => <ServiceCard service={service}/>}
           />
         </CardContent>
       </Card>

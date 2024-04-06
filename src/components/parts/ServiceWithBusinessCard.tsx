@@ -10,14 +10,11 @@ import {
   Avatar,
 } from "@mui/material";
 import { Link } from "react-router-dom";
-import { useState } from "react";
 import { ServiceDetailed } from "../../domain/Service";
 
 export default function ServiceWithBusinessCard({ service }: { service: ServiceDetailed }) {
-  const [businessImageLoaded, setBusinessImageLoaded] = useState(false);
-
   return (
-    <Card sx={{ display: "flex", marginBottom: 2, boxShadow: 3 }}>
+    <Card sx={{ display: "flex", boxShadow: 3 }}>
       {/* Service Picture on the left part */}
       <CardMedia
         component="img"
@@ -50,17 +47,8 @@ export default function ServiceWithBusinessCard({ service }: { service: ServiceD
                 to={`/home/businesses/${service.business.id}`}
               >
                 <Box display="flex" flexDirection="row" alignItems="center">
-                  <Avatar
-                    src={service.business.picture}
-                    slotProps={{
-                      img: {
-                        onLoad: () => setBusinessImageLoaded(true),
-                      },
-                    }}
-                  >
-                    {!businessImageLoaded && (
-                      <Skeleton variant="circular" width={40} height={40} />
-                    )}
+                  <Avatar src={service.business.picture}>
+                    <Skeleton variant="circular" width={40} height={40} />
                   </Avatar>
                   <Typography marginLeft={1} variant="overline">
                     {service.business.name}

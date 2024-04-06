@@ -2,8 +2,8 @@ import { faker } from "@faker-js/faker";
 import axios from "axios";
 import { BusinessDetailed, BusinessFormData } from "../domain/Business";
 import { Page } from "../domain/Page";
-import { Service, ServiceDetailed } from "../domain/Service";
-import { Staff, StaffBusiness } from "../domain/Staff";
+import { Service, ServiceDetailed, ServiceFormData } from "../domain/Service";
+import { Staff, StaffBusiness, StaffInvitation } from "../domain/Staff";
 import {
   Reservation,
   ReservationDetailed,
@@ -363,12 +363,27 @@ export async function restoreReservation(reservationId: number) {
   return;
 }
 
-export async function createBusiness(formData: BusinessFormData) {
+export async function createBusiness(formData: BusinessFormData): Promise<BusinessDetailed> {
   const response = await axios.post<BusinessDTO>(
     `business/api-v1/management/create`,
     formData
   );
   return detailedBusiness(response.data);
+}
+
+export async function createService(formData: ServiceFormData): Promise<ServiceDetailed> {
+  const response = await axios.post<Service>(
+    `services/api-v1/management/create`,
+    formData
+  );
+  return detailedService(response.data);
+}
+
+export async function inviteStaff(subject: string, businessId: number): Promise<StaffInvitation> {
+  const response = await axios.post<StaffInvitation>(
+    `staff/api-v1/management/send-invitation/${subject}/${businessId}`
+  );
+  return response.data;
 }
 
 class BusinessDTO {
