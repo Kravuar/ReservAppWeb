@@ -4,6 +4,7 @@ import { ServiceDetailed } from "../../domain/Service";
 import BusinessCard from "./BusinessCard";
 import { Box, Card, CardContent, Typography } from "@mui/material";
 import ServiceList from "./ServiceList";
+import ServiceCard from "./ServiceCard";
 
 export default function BusinessBody({
   business,
@@ -36,7 +37,7 @@ export default function BusinessBody({
           </Typography>
           <ServiceList
             searchPageSupplier={searchServicesPageSupplier}
-            showBusiness={false}
+            CardComponent={ServiceCard}
           />
         </CardContent>
       </Card>

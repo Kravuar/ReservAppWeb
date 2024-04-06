@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import axios from "axios";
-import { BusinessDetailed } from "../domain/Business";
+import { BusinessDetailed, BusinessFormData } from "../domain/Business";
 import { Page } from "../domain/Page";
 import { Service, ServiceDetailed } from "../domain/Service";
 import { Staff, StaffBusiness } from "../domain/Staff";
@@ -125,23 +125,6 @@ export async function myDetailedBusinessById(id: number): Promise<BusinessDetail
     `business/api-v1/retrieval/my/by-id/${id}`
   );
   return detailedBusiness(response.data);
-}
-
-export async function detailedBusinessesByOwner(
-  ownerSub: string,
-  page: number,
-  pageSize: number
-): Promise<Page<BusinessDetailed>> {
-  const response = await axios.get<Page<BusinessDTO>>(
-    `business/api-v1/retrieval/by-owner/${ownerSub}/${paginationAdjustment(
-      page
-    )}/${pageSize}`
-  );
-
-  return {
-    content: response.data.content.map(detailedBusiness),
-    totalPages: response.data.totalPages,
-  };
 }
 
 export async function myDetailedBusinesses(
@@ -378,6 +361,14 @@ export async function restoreReservation(reservationId: number) {
     `schedule/api-v1/reservation/management/restore/${reservationId}`
   );
   return;
+}
+
+export async function createBusiness(formData: BusinessFormData) {
+  const response = await axios.post<BusinessDTO>(
+    `business/api-v1/management/create`,
+    formData
+  );
+  return detailedBusiness(response.data);
 }
 
 class BusinessDTO {

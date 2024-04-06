@@ -1,5 +1,4 @@
 import { Box, Button, Pagination, TextField } from "@mui/material";
-import ServiceCard from "./ServiceCard";
 import { Page } from "../../domain/Page";
 import { ServiceDetailed } from "../../domain/Service";
 import { useEffect, useState } from "react";
@@ -7,13 +6,15 @@ import SearchIcon from "@mui/icons-material/Search";
 
 export default function ServiceList({
   searchPageSupplier,
-  showBusiness,
+  CardComponent,
+  propsExtractor
 }: {
   searchPageSupplier: (
     name: string,
     page: number
   ) => Promise<Page<ServiceDetailed>>;
-  showBusiness: boolean;
+  CardComponent: React.ComponentType<{ service: ServiceDetailed }>;
+  propsExtractor?: (business: ServiceDetailed) => any;
 }) {
   const [pageNumber, setPageNumber] = useState(1);
   const [name, setName] = useState("");
@@ -67,13 +68,12 @@ export default function ServiceList({
         />
       </Box>
       <Box sx={{ overflow: "auto" }}>
-        {page?.content.map((service) => (
-          <ServiceCard
-            key={service.id}
-            service={service}
-            showBusiness={showBusiness}
-          />
-        ))}
+        {page?.content?.map((service) => {
+            const props = propsExtractor ? propsExtractor(service) : null;
+            return (
+              <CardComponent key={service.id} service={service} {...props}/>
+            )
+          })}
       </Box>
       {page?.content.length !== undefined && page?.content.length > 3 && (
         <Box sx={{ display: "flex", justifyContent: "center" }}>

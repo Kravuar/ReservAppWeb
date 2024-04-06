@@ -8,8 +8,9 @@ import {
   myReservations,
   cancelReservation,
   restoreReservation,
+  createBusiness,
 } from "../../../services/api";
-import { BusinessDetailed } from "../../../domain/Business";
+import { BusinessDetailed, BusinessFormData } from "../../../domain/Business";
 import { Page } from "../../../domain/Page";
 import { ReservationDetailed } from "../../../domain/Schedule";
 import { LocalDate } from "@js-joda/core";
@@ -21,7 +22,6 @@ export default function ProfilePage() {
   const user = useAuthUser();
   const { withErrorAlert, withAlert } = useAlert();
   const [tab, setTab] = useState(0);
-  
 
   async function fetchBusinesses(
     page: number
@@ -30,11 +30,19 @@ export default function ProfilePage() {
   }
 
   async function onCancelReservation(reservationId: number) {
-    return withAlert(() => withErrorAlert(() => cancelReservation(reservationId)), "Запись отменена", "success");
+    return withAlert(
+      () => withErrorAlert(() => cancelReservation(reservationId)),
+      "Запись отменена",
+      "success"
+    );
   }
 
   async function onReservationRestore(reservationId: number) {
-    return withAlert(() => withErrorAlert(() => restoreReservation(reservationId)), "Запись восстановлена", "success");
+    return withAlert(
+      () => withErrorAlert(() => restoreReservation(reservationId)),
+      "Запись восстановлена",
+      "success"
+    );
   }
 
   async function fetchReservations(
@@ -42,6 +50,14 @@ export default function ProfilePage() {
     to: LocalDate
   ): Promise<Map<LocalDate, ReservationDetailed[]>> {
     return withErrorAlert(() => myReservations(from, to));
+  }
+
+  async function businessCreationHandler(formData: BusinessFormData): Promise<BusinessDetailed> {
+    return withAlert(
+      () => withErrorAlert(() => createBusiness(formData)),
+      "Бизнес создан",
+      "success"
+    );
   }
 
   return (
@@ -59,7 +75,12 @@ export default function ProfilePage() {
           <Tab label="Записи ко мне" />
         </Tabs>
         <Box sx={{ padding: 3 }}>
-          {tab === 0 && <ProfileBusinessesTab pageSupplier={fetchBusinesses} />}
+          {tab === 0 && (
+            <ProfileBusinessesTab
+              pageSupplier={fetchBusinesses}
+              businessCreationHandler={businessCreationHandler}
+            />
+          )}
           {tab === 1 && (
             <ProfileReservationsTab
               onCancelReservation={onCancelReservation}

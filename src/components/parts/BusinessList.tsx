@@ -1,13 +1,16 @@
 import { Box, Pagination } from "@mui/material";
-import BusinessCard from "./BusinessCard";
 import { Page } from "../../domain/Page";
 import { BusinessDetailed } from "../../domain/Business";
 import { useEffect, useState } from "react";
 
 export default function BusinessList({
   pageSupplier,
+  CardComponent,
+  propsExtractor
 }: {
   pageSupplier: (page: number) => Promise<Page<BusinessDetailed>>;
+  CardComponent: React.ComponentType<{ business: BusinessDetailed }>;
+  propsExtractor?: (business: BusinessDetailed) => any;
 }) {
   const [pageNumber, setPageNumber] = useState(1);
   const [page, setPage] = useState<Page<BusinessDetailed>>();
@@ -31,9 +34,12 @@ export default function BusinessList({
         />
       </Box>
       <Box sx={{ overflow: "auto" }}>
-        {page?.content?.map((business) => (
-          <BusinessCard key={business.id} business={business} />
-        ))}
+        {page?.content?.map((business) => {
+          const props = propsExtractor ? propsExtractor(business) : null;
+          return (
+            <CardComponent key={business.id} business={business} {...props} />
+          );
+        })}
       </Box>
       {page?.content?.length !== undefined && page?.content?.length > 3 && (
         <Box sx={{ display: "flex", justifyContent: "center" }}>

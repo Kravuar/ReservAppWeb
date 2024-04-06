@@ -24,7 +24,7 @@ axios.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
     if (error.response?.data) {
-      const errorMessage = (error.response.data || error.message) as string;
+      const errorMessage = (error.response.data || error.message)  as string;
 
       const newError = new Error(errorMessage);
       newError.stack = error.stack;

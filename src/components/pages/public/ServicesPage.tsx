@@ -3,6 +3,7 @@ import { Page } from "../../../domain/Page";
 import { ServiceDetailed } from "../../../domain/Service";
 import { activeServices } from "../../../services/api";
 import { useAlert } from "../../util/Alert";
+import ServiceWithBusinessCard from "../../parts/ServiceWithBusinessCard";
 
 export default function ServicesPage() {
   const { withErrorAlert } = useAlert();
@@ -17,6 +18,6 @@ export default function ServicesPage() {
   }
 
   return (
-    <ServiceList searchPageSupplier={fetchDataWithName} showBusiness={true}/>
+    <ServiceList searchPageSupplier={fetchDataWithName} CardComponent={ServiceWithBusinessCard}/>
   );
 }

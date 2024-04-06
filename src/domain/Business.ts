@@ -9,3 +9,11 @@ export class BusinessDetailed{
     public description?: string
   ) {}
 }
+
+export class BusinessFormData {
+  constructor(
+    public name: string,
+    public picture?: File,
+    public description?: string,
+  ) {}
+}
