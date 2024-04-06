@@ -38,21 +38,96 @@ function combineSlots(
   );
 }
 
-export async function businessById(id: number): Promise<BusinessDetailed> {
+async function megaDetailedReservationsDTO(reservations: ReservationsDTO): Promise<Map<LocalDate, ReservationDetailed[]>> {
+  const dates = Object.keys(reservations);
+  const staffs = await detailedStaffs(dates
+    .flatMap(date => reservations[date])
+    .map(reservation => reservation.staff.id)
+  );
+  const businesses = await detailedBusinesses(dates
+    .flatMap(date => reservations[date])
+    .map(reservation => reservation.service.business.id)
+  );
+  const services = await detailedServicesByIds(dates
+    .flatMap(date => reservations[date])
+    .map(reservation => reservation.service.id),
+    businesses
+  );
+  const reservationData = await Promise.all(
+    dates.map(
+      async (date) =>
+        megaDetailedReservations(
+          reservations[date].map(detailedReservation),
+          staffs,
+          services
+      )
+    )
+  );
+
+  // Fuck it
+  return new Map(Array.from(dates, (date, index) => [
+      LocalDate.parse(date),
+      reservationData[index],
+    ])
+  );
+}
+
+async function scheduleToDetailed(
+  staffId: number,
+  schedule: ScheduleDTO,
+  reservations: Map<LocalDate, Reservation[]>
+): Promise<Map<LocalDate, ReservationSlotDetailed[]>> {
+  const staff = await staffById(staffId);
+
+  return new Map(
+    Array.from(Object.keys(schedule), (dateStr) => {
+      const slotsDTO = schedule[dateStr];
+      const date = LocalDate.parse(dateStr);
+      return [
+        date,
+        slotsDTO.map((slot) => {
+          const sameDayReservations = jodaTsMapIsRetardedGet(
+            date,
+            reservations
+          );
+          const start = LocalTime.parse(slot.start);
+          const end = LocalTime.parse(slot.end);
+          const reservationsCount = sameDayReservations
+            ? sameDayReservations.filter(
+                (reservation) =>
+                  reservation.staff.id === staffId &&
+                  reservation.start.equals(start)
+              ).length
+            : 0;
+          return new ReservationSlotDetailed(
+            start,
+            end,
+            slot.cost,
+            slot.maxReservations,
+            slot.maxReservations - reservationsCount,
+            staff
+          );
+        }),
+      ];
+    })
+  );
+}
+
+export async function detailedBusinessById(id: number): Promise<BusinessDetailed> {
   const response = await axios.get<BusinessDTO>(
     `business/api-v1/retrieval/by-id/${id}`
   );
   return detailedBusiness(response.data);
 }
 
-export async function myBusinessById(id: number): Promise<BusinessDetailed> {
+export async function myDetailedBusinessById(id: number): Promise<BusinessDetailed> {
   const response = await axios.get<BusinessDTO>(
     `business/api-v1/retrieval/my/by-id/${id}`
   );
   return detailedBusiness(response.data);
 }
 
-export async function businessesByOwner(
+export async function detailedBusinessesByOwner(
   ownerSub: string,
   page: number,
   pageSize: number
@@ -69,7 +144,7 @@ export async function businessesByOwner(
   };
 }
 
-export async function myBusinesses(
+export async function myDetailedBusinesses(
   page: number,
   pageSize: number
 ): Promise<Page<BusinessDetailed>> {
@@ -83,7 +158,7 @@ export async function myBusinesses(
   };
 }
 
-export async function activeBusinesses(
+export async function activeDetailedBusinesses(
   page: number,
   pageSize: number
 ): Promise<Page<BusinessDetailed>> {
@@ -97,13 +172,17 @@ export async function activeBusinesses(
   };
 }
 
-export async function serviceById(id: number): Promise<ServiceDetailed> {
+export async function serviceById(id: number): Promise<Service> {
+  return (await axios.get<Service>(`services/api-v1/retrieval/by-id/${id}`)).data
+}
+
+export async function detailedServiceById(id: number): Promise<ServiceDetailed> {
   return detailedService(
     (await axios.get<Service>(`services/api-v1/retrieval/by-id/${id}`)).data
   );
 }
 
-export async function myServiceById(id: number): Promise<ServiceDetailed> {
+export async function myDetailedServiceById(id: number): Promise<ServiceDetailed> {
   return detailedService(
     (await axios.get<Service>(`services/api-v1/retrieval/my/by-id/${id}`)).data
   );
@@ -116,8 +195,11 @@ export async function activeServices(
   const response = await axios.get<Page<Service>>(
     `services/api-v1/retrieval/active/${paginationAdjustment(page)}/${pageSize}`
   );
+  const services = response.data;
+
+  const businesses = await detailedBusinesses(services.content.map(service => service.business.id));
   return {
-    content: await Promise.all(response.data.content.map(detailedService)),
+    content: Array.from((await detailedServices(services.content, businesses)).values()),
     totalPages: response.data.totalPages,
   };
 }
@@ -132,8 +214,11 @@ export async function servicesByBusiness(
       page
     )}/${pageSize}`
   );
+  const services = response.data;
+
+  const businesses = await detailedBusinesses(services.content.map(service => service.business.id));
   return {
-    content: await Promise.all(response.data.content.map(detailedService)),
+    content: Array.from((await detailedServices(services.content, businesses)).values()),
     totalPages: response.data.totalPages,
   };
 }
@@ -148,8 +233,11 @@ export async function myServicesByBusiness(
       page
     )}/${pageSize}`
   );
+  const services = response.data;
+
+  const businesses = await detailedBusinesses(services.content.map(service => service.business.id));
   return {
-    content: await Promise.all(response.data.content.map(detailedService)),
+    content: Array.from((await detailedServices(services.content, businesses)).values()),
     totalPages: response.data.totalPages,
   };
 }
@@ -219,26 +307,7 @@ export async function myReservations(
   const response = await axios.get<ReservationsDTO>(
     `schedule/api-v1/reservation/retrieval/my/${from}/${to}`
   );
-  const reservations = response.data;
-
-  const dates = Object.keys(reservations);
-  const reservationData = await Promise.all(
-    dates.map(
-      async (date) =>
-        await Promise.all(
-          reservations[date]
-            .map(detailedReservation)
-            .map(megaDetailedReservation)
-        )
-    )
-  );
-
-  // Fuck it
-  return new Map(Array.from(dates, (date, index) => [
-      LocalDate.parse(date),
-      reservationData[index],
-    ])
-  );
+  return megaDetailedReservationsDTO(response.data);
 }
 
 export async function scheduleByServiceAndStaff(
@@ -309,47 +378,6 @@ export async function restoreReservation(reservationId: number) {
     `schedule/api-v1/reservation/management/restore/${reservationId}`
   );
   return;
-}
-
-async function scheduleToDetailed(
-  staffId: number,
-  schedule: ScheduleDTO,
-  reservations: Map<LocalDate, Reservation[]>
-): Promise<Map<LocalDate, ReservationSlotDetailed[]>> {
-  const staff = await staffById(staffId);
-
-  return new Map(
-    Array.from(Object.keys(schedule), (dateStr) => {
-      const slotsDTO = schedule[dateStr];
-      const date = LocalDate.parse(dateStr);
-      return [
-        date,
-        slotsDTO.map((slot) => {
-          const sameDayReservations = jodaTsMapIsRetardedGet(
-            date,
-            reservations
-          );
-          const start = LocalTime.parse(slot.start);
-          const end = LocalTime.parse(slot.end);
-          const reservationsCount = sameDayReservations
-            ? sameDayReservations.filter(
-                (reservation) =>
-                  reservation.staff.id === staffId &&
-                  reservation.start.equals(start)
-              ).length
-            : 0;
-          return new ReservationSlotDetailed(
-            start,
-            end,
-            slot.cost,
-            slot.maxReservations,
-            slot.maxReservations - reservationsCount,
-            staff
-          );
-        }),
-      ];
-    })
-  );
 }
 
 class BusinessDTO {
@@ -423,7 +451,7 @@ export function jodaTsMapIsRetardedGet<V>(
 //
 
 async function detailedService(service: Service) {
-  const business = await businessById(service.business.id);
+  const business = await detailedBusinessById(service.business.id);
 
   return new ServiceDetailed(
     service.id,
@@ -434,6 +462,41 @@ async function detailedService(service: Service) {
     service.name,
     service.description
   );
+}
+
+async function detailedServicesByIds(serviceIds: number[], businessSupplier: Map<number, BusinessDetailed>): Promise<Map<number, ServiceDetailed>> {
+  const map = new Map<number, ServiceDetailed>();
+  for (var serviceId of serviceIds)
+    if (!map.get(serviceId)) {
+      const service = await serviceById(serviceId);
+      map.set(serviceId, new ServiceDetailed(
+        service.id,
+        businessSupplier.get(service.business.id)!,
+        service.active,
+        faker.image.url(),
+        faker.number.float({ fractionDigits: 2, min: 1, max: 5 }),
+        service.name,
+        service.description
+      ))
+    }
+  return map;
+}
+
+async function detailedServices(services: Service[], businessSupplier: Map<number, BusinessDetailed>): Promise<Map<number, ServiceDetailed>> {
+  const map = new Map<number, ServiceDetailed>();
+  for (var service of services)
+    if (!map.get(service.id)) {
+      map.set(service.id, new ServiceDetailed(
+        service.id,
+        businessSupplier.get(service.business.id)!,
+        service.active,
+        faker.image.url(),
+        faker.number.float({ fractionDigits: 2, min: 1, max: 5 }),
+        service.name,
+        service.description
+      ))
+    }
+  return map;
 }
 
 function detailedReservation(reservation: ReservationDTO): Reservation {
@@ -449,22 +512,29 @@ function detailedReservation(reservation: ReservationDTO): Reservation {
   );
 }
 
-async function megaDetailedReservation(
-  reservation: Reservation
-): Promise<ReservationDetailed> {
-  const staff = await staffById(reservation.staff.id);
-  const service = await serviceById(reservation.service.id);
-
-  return new ReservationDetailed(
+async function megaDetailedReservations(
+  reservations: Reservation[],
+  staffSupplier: Map<number, Staff>,
+  serviceSupplier: Map<number, ServiceDetailed>
+): Promise<ReservationDetailed[]> {
+  return reservations.map(reservation => new ReservationDetailed(
     reservation.id,
     reservation.date,
     reservation.start,
     reservation.end,
-    staff,
-    service,
+    staffSupplier.get(reservation.staff.id)!,
+    serviceSupplier.get(reservation.service.id)!,
     reservation.active,
     reservation.createdAt
-  );
+  ));
+}
+
+async function detailedBusinesses(businessIds: number[]): Promise<Map<number, BusinessDetailed>> {
+  const map = new Map<number, BusinessDetailed>();
+  for (var businessId of businessIds)
+    if (!map.get(businessId))
+      map.set(businessId, await detailedBusinessById(businessId));
+  return map;
 }
 
 function detailedBusiness(business: BusinessDTO): BusinessDetailed {
@@ -477,6 +547,14 @@ function detailedBusiness(business: BusinessDTO): BusinessDetailed {
     faker.number.float({ fractionDigits: 2, min: 1, max: 5 }),
     business.description
   );
+}
+
+async function detailedStaffs(staffIds: number[]): Promise<Map<number, Staff>> {
+  const map = new Map<number, Staff>();
+  for (var staffId of staffIds)
+    if (!map.get(staffId))
+      map.set(staffId, await staffById(staffId));
+  return map;
 }
 
 async function detailedStaff(staff: StaffDTO) {

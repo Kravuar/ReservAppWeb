@@ -4,7 +4,7 @@ import { BusinessDetailed } from "../../../domain/Business";
 import { Box, Skeleton } from "@mui/material";
 import { useParams } from "react-router-dom";
 import ErrorPage from "../../util/ErrorPage";
-import { businessById, servicesByBusiness } from "../../../services/api";
+import { detailedBusinessById, servicesByBusiness } from "../../../services/api";
 import { Page } from "../../../domain/Page";
 import { ServiceDetailed } from "../../../domain/Service";
 import { useAlert } from "../../util/Alert";
@@ -20,7 +20,7 @@ export default function BusinessPage() {
       setError("Номер бизнеса обязателен");
       return;
     }
-    businessById(id)
+    detailedBusinessById(id)
       .then(setBusiness)
       .catch((error) => setError(error));
   }, [id]);

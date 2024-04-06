@@ -4,7 +4,7 @@ import { ServiceDetailed } from "../../../domain/Service";
 import { Box, Skeleton } from "@mui/material";
 import { useParams } from "react-router-dom";
 import ErrorPage from "../../util/ErrorPage";
-import { reserveSlot, scheduleByService, scheduleByServiceAndStaff, serviceById, staffByBusinessId } from "../../../services/api";
+import { reserveSlot, scheduleByService, scheduleByServiceAndStaff, detailedServiceById, staffByBusinessId } from "../../../services/api";
 import { LocalDateTime } from "@js-joda/core";
 import { useAlert } from "../../util/Alert";
 
@@ -19,7 +19,7 @@ export default function ServicePage() {
       setError("Номер услуги обязателен");
       return;
     }
-    serviceById(id)
+    detailedServiceById(id)
       .then(setService)
       .catch((error) => setError(error));
   }, [id]);

@@ -4,7 +4,7 @@ import ProfileCard from "../../parts/ProfileCard";
 import { useState } from "react";
 import ProfileBusinessesTab from "./ProfileBusinessesTab";
 import {
-  myBusinesses,
+  myDetailedBusinesses,
   myReservations,
   cancelReservation,
   restoreReservation,
@@ -26,7 +26,7 @@ export default function ProfilePage() {
   async function fetchBusinesses(
     page: number
   ): Promise<Page<BusinessDetailed>> {
-    return withErrorAlert(() => myBusinesses(page, 10));
+    return withErrorAlert(() => myDetailedBusinesses(page, 10));
   }
 
   async function onCancelReservation(reservationId: number) {

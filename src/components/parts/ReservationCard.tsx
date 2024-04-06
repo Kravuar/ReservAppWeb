@@ -17,7 +17,7 @@ import {
   EditCalendar,
   Restore,
 } from "@mui/icons-material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function ReservationCard({
   reservation,
@@ -29,18 +29,23 @@ export default function ReservationCard({
   onReservationRestore: (reservationId: number) => Promise<void>;
 }) {
   const [staffImageLoaded, setStaffImageLoaded] = useState<boolean>(false);
-  const [enabled, setEnabled] = useState<boolean>(reservation.active);
+  const [enabled, setEnabled] = useState<boolean>(true);
+
+  useEffect(
+    () => setEnabled(reservation.active),
+    [reservation]
+  );
 
   function cancelHandler() {
     onCancelReservation(reservation.id)
       .then(() => setEnabled(false))
-      .catch(() => {});;
+      .catch(() => {});
   }
 
   function restoreHandler() {
     onReservationRestore(reservation.id)
       .then(() => setEnabled(true))
-      .catch(() => {});;
+      .catch(() => {});
   }
 
   function handleReservationAction() {

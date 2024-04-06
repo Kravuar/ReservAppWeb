@@ -17,7 +17,7 @@ import {
   EditCalendar,
   Money,
 } from "@mui/icons-material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function ReservationSlotCard({
   reservationSlot,
@@ -28,13 +28,18 @@ export default function ReservationSlotCard({
   onReserve: () => Promise<void>;
   showStaff?: boolean;
 }) {
-  const [reservationsLeft, setReservationsLeft] = useState<number>(reservationSlot.reservationsLeft);
+  const [reservationsLeft, setReservationsLeft] = useState<number>(0);
   const [staffImageLoaded, setStaffImageLoaded] = useState<boolean>(false);
+
+  useEffect(
+    () => setReservationsLeft(reservationSlot.reservationsLeft),
+    [reservationSlot]
+  );
 
   function reserveHandler() {
     onReserve()
       .then(() => setReservationsLeft(reservationsLeft - 1))
-      .catch(e => console.log(e));
+      .catch(() => {});
   }
 
   return (

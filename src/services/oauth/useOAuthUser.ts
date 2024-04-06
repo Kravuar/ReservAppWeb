@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useOktaAuth } from "@okta/okta-react";
 import { UserClaims, CustomUserClaims } from "@okta/okta-auth-js";
 
-const useAuthUser = () => {
+export default function useAuthUser() {
   const { oktaAuth, authState } = useOktaAuth();
   const [userInfo, setUserInfo] = useState<UserClaims<CustomUserClaims> | null>(null);
 
@@ -21,5 +21,3 @@ const useAuthUser = () => {
 
   return userInfo;
 };
-
-export default useAuthUser;
