@@ -19,11 +19,11 @@ export default function ServiceList({
   const [page, setPage] = useState<Page<ServiceDetailed>>();
 
   useEffect(() => {
-    searchPageSupplier(name, pageNumber).then(setPage).catch();
+    searchPageSupplier(name, pageNumber).then(setPage).catch(() => {});
   }, [name, pageNumber, searchPageSupplier]);
 
   function handleSearchClick() {
-    searchPageSupplier(name, pageNumber).then(setPage).catch();
+    searchPageSupplier(name, pageNumber).then(setPage).catch(() => {});
   }
 
   return (

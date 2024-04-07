@@ -8,7 +8,6 @@ import {
   IconButton,
   CardMedia,
   Typography,
-  CardActionArea,
 } from "@mui/material";
 import PhotoCamera from "@mui/icons-material/PhotoCamera";
 
@@ -40,7 +39,7 @@ export default function ServiceForm({
         setDescription("");
         setPicture(null);
       })
-      .catch();
+      .catch(() => {});
   };
 
   const handlePictureChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -97,14 +96,14 @@ export default function ServiceForm({
             component="span"
           >
             <PhotoCamera sx={{ mr: 2 }} />
-            <Typography variant="h6" sx={{ flexGrow: 1 }}>
+            <Typography variant="h6">
               {picture ? picture.name : "Загрузить изображение"}
             </Typography>
           </IconButton>
         </label>
       </CardContent>
       <CardActions>
-        <Button type="submit" variant="contained" color="success" fullWidth>
+        <Button type="submit" variant="contained" color="success" fullWidth onClick={handleSubmit}>
           Создать
         </Button>
       </CardActions>

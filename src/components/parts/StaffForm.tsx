@@ -20,7 +20,7 @@ export default function ServiceForm({
       .then(() => {
         setSubject("");
       })
-      .catch();
+      .catch(() => {});
   };
 
   return (

@@ -34,7 +34,7 @@ export default function BusinessForm({
         setDescription("");
         setPicture(null);
       })
-      .catch();
+      .catch(() => {});
   };
 
   const handlePictureChange = (event: React.ChangeEvent<HTMLInputElement>) => {

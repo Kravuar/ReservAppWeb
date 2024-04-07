@@ -16,7 +16,7 @@ export default function BusinessList({
   useEffect(() => {
     pageSupplier(pageNumber)
       .then((page) => setPage(page))
-      .catch();
+      .catch(() => {});
   }, [pageNumber, pageSupplier]);
 
   return (

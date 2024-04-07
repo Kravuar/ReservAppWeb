@@ -1,7 +1,6 @@
 import { LocalDate, LocalTime } from "@js-joda/core";
 import { ReservationDetailed } from "../../domain/Schedule";
 import { Box, Typography, Grid, Card, CardContent } from "@mui/material";
-import ReservationCard from "./ReservationCard";
 
 export type ReserveAction = (
   staffId: number,
@@ -9,14 +8,22 @@ export type ReserveAction = (
   start: LocalTime
 ) => Promise<void>;
 
-export default function ReservationBody({
+export type ReservationCardProps<T extends ReservationDetailed> = {
+  reservation: T,
+  cancelHandler: (reservationId: number) => Promise<void>;
+  restoreHandler: (reservationId: number) => Promise<void>;
+}
+
+export default function ReservationBody<ReservationType extends ReservationDetailed>({
   schedule,
-  onCancelReservation,
-  onReservationRestore
+  cancelHandler,
+  restoreHandler,
+  CardComponent,
 }: {
-  schedule: Map<LocalDate, ReservationDetailed[]>;
-  onCancelReservation: (reservationId: number) => Promise<void>;
-  onReservationRestore: (reservationId: number) => Promise<void>;
+  schedule: Map<LocalDate, ReservationType[]>;
+  cancelHandler: (reservationId: number) => Promise<void>;
+  restoreHandler: (reservationId: number) => Promise<void>;
+  CardComponent: React.ComponentType<ReservationCardProps<ReservationType>>;
 }) {
   return (
     <Box>
@@ -44,10 +51,10 @@ export default function ReservationBody({
               <Grid container spacing={2}>
                 {reservations.map((reservation, slotIndex) => (
                   <Grid item xs={12} sm={6} md={4} key={slotIndex}>
-                    <ReservationCard
+                    <CardComponent
                       reservation={reservation}
-                      onCancelReservation={onCancelReservation}
-                      onReservationRestore={onReservationRestore}
+                      cancelHandler={cancelHandler}
+                      restoreHandler={restoreHandler}
                     />
                   </Grid>
                 ))}

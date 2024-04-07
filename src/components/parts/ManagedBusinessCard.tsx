@@ -15,6 +15,7 @@ export default function ManagedBusinessCard({
   staffPageSupplier,
   serviceCreationHandler,
   staffInvitationHandler,
+  staffRemovalHandler,
 }: {
   business: BusinessDetailed;
   servicePageSupplier: (
@@ -24,6 +25,7 @@ export default function ManagedBusinessCard({
   staffPageSupplier: (page: number) => Promise<Page<Staff>>;
   serviceCreationHandler: (formData: ServiceFormData) => Promise<void>;
   staffInvitationHandler: (subject: string) => Promise<void>;
+  staffRemovalHandler: (staffId: number) => Promise<void>;
 }) {
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState(0);
@@ -61,6 +63,7 @@ export default function ManagedBusinessCard({
             <ManagedStaffTab
               pageSupplier={staffPageSupplier}
               staffInvitationHandler={staffInvitationHandler}
+              removeHandler={staffRemovalHandler}
             />
           )}
         </Box>

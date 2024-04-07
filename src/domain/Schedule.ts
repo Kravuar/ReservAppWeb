@@ -46,12 +46,40 @@ export class ReservationDetailed {
   ) {}
 }
 
+export class ReservationFromClientDetailed {
+  constructor(
+    public id: number,
+    public date: LocalDate,
+    public start: LocalTime,
+    public end: LocalTime,
+    public clientSub: string,
+    public staff: Staff,
+    public service: Service,
+    public active: boolean,
+    public createdAt: LocalDateTime
+  ) {}
+}
+
 export class Reservation {
   constructor(
     public id: number,
     public date: LocalDate,
     public start: LocalTime,
     public end: LocalTime,
+    public staff: ScheduleStaff,
+    public service: ScheduleService,
+    public active: boolean,
+    public createdAt: LocalDateTime
+  ) {}
+}
+
+export class ReservationFromClient {
+  constructor(
+    public id: number,
+    public date: LocalDate,
+    public start: LocalTime,
+    public end: LocalTime,
+    public clientSub: string,
     public staff: ScheduleStaff,
     public service: ScheduleService,
     public active: boolean,

@@ -7,6 +7,8 @@ import { Staff, StaffBusiness, StaffInvitation } from "../domain/Staff";
 import {
   Reservation,
   ReservationDetailed,
+  ReservationFromClient,
+  ReservationFromClientDetailed,
   ReservationSlotDetailed,
   ScheduleService,
   ScheduleStaff,
@@ -38,34 +40,79 @@ function combineSlots(
   );
 }
 
-async function megaDetailedReservationsDTO(reservations: ReservationsDTO): Promise<Map<LocalDate, ReservationDetailed[]>> {
+async function megaDetailedReservationsDTO(
+  reservations: ReservationsDTO
+): Promise<Map<LocalDate, ReservationDetailed[]>> {
   const dates = Object.keys(reservations);
-  const staffs = await detailedStaffs(dates
-    .flatMap(date => reservations[date])
-    .map(reservation => reservation.staff.id)
+  const staffs = await detailedStaffs(
+    dates
+      .flatMap((date) => reservations[date])
+      .map((reservation) => reservation.staff.id)
   );
-  const businesses = await detailedBusinesses(dates
-    .flatMap(date => reservations[date])
-    .map(reservation => reservation.service.business.id)
+  const businesses = await detailedBusinesses(
+    dates
+      .flatMap((date) => reservations[date])
+      .map((reservation) => reservation.service.business.id)
   );
-  const services = await detailedServicesByIds(dates
-    .flatMap(date => reservations[date])
-    .map(reservation => reservation.service.id),
+  const services = await detailedServicesByIds(
+    dates
+      .flatMap((date) => reservations[date])
+      .map((reservation) => reservation.service.id),
     businesses
   );
   const reservationData = await Promise.all(
-    dates.map(
-      async (date) =>
-        megaDetailedReservations(
-          reservations[date].map(detailedReservation),
-          staffs,
-          services
+    dates.map(async (date) =>
+      megaDetailedReservations(
+        reservations[date].map(detailedReservation),
+        staffs,
+        services
       )
     )
   );
 
   // Fuck it
-  return new Map(Array.from(dates, (date, index) => [
+  return new Map(
+    Array.from(dates, (date, index) => [
+      LocalDate.parse(date),
+      reservationData[index],
+    ])
+  );
+}
+
+// Will be hard to reuse code when this dto will gain more client info
+async function megaDetailedReservationsFromClientDTO(
+  reservations: ReservationsFromClientDTO
+): Promise<Map<LocalDate, ReservationFromClientDetailed[]>> {
+  const dates = Object.keys(reservations);
+  const staffs = await detailedStaffs(
+    dates
+      .flatMap((date) => reservations[date])
+      .map((reservation) => reservation.staff.id)
+  );
+  const businesses = await detailedBusinesses(
+    dates
+      .flatMap((date) => reservations[date])
+      .map((reservation) => reservation.service.business.id)
+  );
+  const services = await detailedServicesByIds(
+    dates
+      .flatMap((date) => reservations[date])
+      .map((reservation) => reservation.service.id),
+    businesses
+  );
+  const reservationData = await Promise.all(
+    dates.map(async (date) =>
+      megaDetailedReservationsFromClient(
+        reservations[date].map(detailedReservationFromClient),
+        staffs,
+        services
+      )
+    )
+  );
+
+  // Fuck it
+  return new Map(
+    Array.from(dates, (date, index) => [
       LocalDate.parse(date),
       reservationData[index],
     ])
@@ -113,14 +160,18 @@ async function scheduleToDetailed(
   );
 }
 
-export async function detailedBusinessById(id: number): Promise<BusinessDetailed> {
+export async function detailedBusinessById(
+  id: number
+): Promise<BusinessDetailed> {
   const response = await axios.get<BusinessDTO>(
     `business/api-v1/retrieval/by-id/${id}`
   );
   return detailedBusiness(response.data);
 }
 
-export async function myDetailedBusinessById(id: number): Promise<BusinessDetailed> {
+export async function myDetailedBusinessById(
+  id: number
+): Promise<BusinessDetailed> {
   const response = await axios.get<BusinessDTO>(
     `business/api-v1/retrieval/my/by-id/${id}`
   );
@@ -156,16 +207,21 @@ export async function activeDetailedBusinesses(
 }
 
 export async function serviceById(id: number): Promise<Service> {
-  return (await axios.get<Service>(`services/api-v1/retrieval/by-id/${id}`)).data
+  return (await axios.get<Service>(`services/api-v1/retrieval/by-id/${id}`))
+    .data;
 }
 
-export async function detailedServiceById(id: number): Promise<ServiceDetailed> {
+export async function detailedServiceById(
+  id: number
+): Promise<ServiceDetailed> {
   return detailedService(
     (await axios.get<Service>(`services/api-v1/retrieval/by-id/${id}`)).data
   );
 }
 
-export async function myDetailedServiceById(id: number): Promise<ServiceDetailed> {
+export async function myDetailedServiceById(
+  id: number
+): Promise<ServiceDetailed> {
   return detailedService(
     (await axios.get<Service>(`services/api-v1/retrieval/my/by-id/${id}`)).data
   );
@@ -180,9 +236,13 @@ export async function activeServices(
   );
   const services = response.data;
 
-  const businesses = await detailedBusinesses(services.content.map(service => service.business.id));
+  const businesses = await detailedBusinesses(
+    services.content.map((service) => service.business.id)
+  );
   return {
-    content: Array.from((await detailedServices(services.content, businesses)).values()),
+    content: Array.from(
+      (await detailedServices(services.content, businesses)).values()
+    ),
     totalPages: response.data.totalPages,
   };
 }
@@ -199,9 +259,13 @@ export async function servicesByBusiness(
   );
   const services = response.data;
 
-  const businesses = await detailedBusinesses(services.content.map(service => service.business.id));
+  const businesses = await detailedBusinesses(
+    services.content.map((service) => service.business.id)
+  );
   return {
-    content: Array.from((await detailedServices(services.content, businesses)).values()),
+    content: Array.from(
+      (await detailedServices(services.content, businesses)).values()
+    ),
     totalPages: response.data.totalPages,
   };
 }
@@ -218,9 +282,13 @@ export async function myServicesByBusiness(
   );
   const services = response.data;
 
-  const businesses = await detailedBusinesses(services.content.map(service => service.business.id));
+  const businesses = await detailedBusinesses(
+    services.content.map((service) => service.business.id)
+  );
   return {
-    content: Array.from((await detailedServices(services.content, businesses)).values()),
+    content: Array.from(
+      (await detailedServices(services.content, businesses)).values()
+    ),
     totalPages: response.data.totalPages,
   };
 }
@@ -293,6 +361,16 @@ export async function myReservations(
   return megaDetailedReservationsDTO(response.data);
 }
 
+export async function reservationsToMe(
+  from: LocalDate,
+  to: LocalDate
+): Promise<Map<LocalDate, ReservationFromClientDetailed[]>> {
+  const response = await axios.get<ReservationsFromClientDTO>(
+    `schedule/api-v1/reservation/retrieval/to-me/${from}/${to}`
+  );
+  return megaDetailedReservationsFromClientDTO(response.data);
+}
+
 export async function scheduleByServiceAndStaff(
   serviceId: number,
   staffId: number,
@@ -363,7 +441,9 @@ export async function restoreReservation(reservationId: number) {
   return;
 }
 
-export async function createBusiness(formData: BusinessFormData): Promise<BusinessDetailed> {
+export async function createBusiness(
+  formData: BusinessFormData
+): Promise<BusinessDetailed> {
   const response = await axios.post<BusinessDTO>(
     `business/api-v1/management/create`,
     formData
@@ -371,7 +451,9 @@ export async function createBusiness(formData: BusinessFormData): Promise<Busine
   return detailedBusiness(response.data);
 }
 
-export async function createService(formData: ServiceFormData): Promise<ServiceDetailed> {
+export async function createService(
+  formData: ServiceFormData
+): Promise<ServiceDetailed> {
   const response = await axios.post<Service>(
     `services/api-v1/management/create`,
     formData
@@ -379,9 +461,19 @@ export async function createService(formData: ServiceFormData): Promise<ServiceD
   return detailedService(response.data);
 }
 
-export async function inviteStaff(subject: string, businessId: number): Promise<StaffInvitation> {
+export async function inviteStaff(
+  subject: string,
+  businessId: number
+): Promise<StaffInvitation> {
   const response = await axios.post<StaffInvitation>(
     `staff/api-v1/management/send-invitation/${subject}/${businessId}`
+  );
+  return response.data;
+}
+
+export async function removeStaff(staffId: number): Promise<void> {
+  const response = await axios.delete<void>(
+    `staff/api-v1/management/remove-staff/${staffId}`
   );
   return response.data;
 }
@@ -433,12 +525,30 @@ class ReservationDTO {
   ) {}
 }
 
+class ReservationFromClientDTO {
+  constructor(
+    public id: number,
+    public date: string,
+    public start: string,
+    public end: string,
+    public clientSub: string,
+    public staff: ScheduleStaff,
+    public service: ScheduleService,
+    public active: boolean,
+    public createdAt: string
+  ) {}
+}
+
 class ScheduleDTO {
   [date: string]: ReservationSlotDTO[];
 }
 
 class ReservationsDTO {
   [date: string]: ReservationDTO[];
+}
+
+class ReservationsFromClientDTO {
+  [date: string]: ReservationFromClientDTO[];
 }
 
 export function jodaTsMapIsRetardedGet<V>(
@@ -470,37 +580,49 @@ async function detailedService(service: Service) {
   );
 }
 
-async function detailedServicesByIds(serviceIds: number[], businessSupplier: Map<number, BusinessDetailed>): Promise<Map<number, ServiceDetailed>> {
+async function detailedServicesByIds(
+  serviceIds: number[],
+  businessSupplier: Map<number, BusinessDetailed>
+): Promise<Map<number, ServiceDetailed>> {
   const map = new Map<number, ServiceDetailed>();
   for (var serviceId of serviceIds)
     if (!map.get(serviceId)) {
       const service = await serviceById(serviceId);
-      map.set(serviceId, new ServiceDetailed(
-        service.id,
-        businessSupplier.get(service.business.id)!,
-        service.active,
-        faker.image.url(),
-        faker.number.float({ fractionDigits: 2, min: 1, max: 5 }),
-        service.name,
-        service.description
-      ))
+      map.set(
+        serviceId,
+        new ServiceDetailed(
+          service.id,
+          businessSupplier.get(service.business.id)!,
+          service.active,
+          faker.image.url(),
+          faker.number.float({ fractionDigits: 2, min: 1, max: 5 }),
+          service.name,
+          service.description
+        )
+      );
     }
   return map;
 }
 
-async function detailedServices(services: Service[], businessSupplier: Map<number, BusinessDetailed>): Promise<Map<number, ServiceDetailed>> {
+async function detailedServices(
+  services: Service[],
+  businessSupplier: Map<number, BusinessDetailed>
+): Promise<Map<number, ServiceDetailed>> {
   const map = new Map<number, ServiceDetailed>();
   for (var service of services)
     if (!map.get(service.id)) {
-      map.set(service.id, new ServiceDetailed(
+      map.set(
         service.id,
-        businessSupplier.get(service.business.id)!,
-        service.active,
-        faker.image.url(),
-        faker.number.float({ fractionDigits: 2, min: 1, max: 5 }),
-        service.name,
-        service.description
-      ))
+        new ServiceDetailed(
+          service.id,
+          businessSupplier.get(service.business.id)!,
+          service.active,
+          faker.image.url(),
+          faker.number.float({ fractionDigits: 2, min: 1, max: 5 }),
+          service.name,
+          service.description
+        )
+      );
     }
   return map;
 }
@@ -518,24 +640,67 @@ function detailedReservation(reservation: ReservationDTO): Reservation {
   );
 }
 
+function detailedReservationFromClient(
+  reservation: ReservationFromClientDTO
+): ReservationFromClient {
+  return new ReservationFromClient(
+    reservation.id,
+    LocalDate.parse(reservation.date),
+    LocalTime.parse(reservation.start),
+    LocalTime.parse(reservation.end),
+    reservation.clientSub,
+    reservation.staff,
+    reservation.service,
+    reservation.active,
+    LocalDateTime.parse(reservation.createdAt)
+  );
+}
+
 async function megaDetailedReservations(
   reservations: Reservation[],
   staffSupplier: Map<number, Staff>,
   serviceSupplier: Map<number, ServiceDetailed>
 ): Promise<ReservationDetailed[]> {
-  return reservations.map(reservation => new ReservationDetailed(
-    reservation.id,
-    reservation.date,
-    reservation.start,
-    reservation.end,
-    staffSupplier.get(reservation.staff.id)!,
-    serviceSupplier.get(reservation.service.id)!,
-    reservation.active,
-    reservation.createdAt
-  ));
+  return reservations.map(
+    (reservation) =>
+      new ReservationDetailed(
+        reservation.id,
+        reservation.date,
+        reservation.start,
+        reservation.end,
+        staffSupplier.get(reservation.staff.id)!,
+        serviceSupplier.get(reservation.service.id)!,
+        reservation.active,
+        reservation.createdAt
+      )
+  );
 }
 
-async function detailedBusinesses(businessIds: number[]): Promise<Map<number, BusinessDetailed>> {
+async function megaDetailedReservationsFromClient(
+  reservations: ReservationFromClient[],
+  staffSupplier: Map<number, Staff>,
+  serviceSupplier: Map<number, ServiceDetailed>
+  // clientSupplier: Map<string, ClientDetailed>
+): Promise<ReservationFromClientDetailed[]> {
+  return reservations.map(
+    (reservation) =>
+      new ReservationFromClientDetailed(
+        reservation.id,
+        reservation.date,
+        reservation.start,
+        reservation.end,
+        reservation.clientSub,
+        staffSupplier.get(reservation.staff.id)!,
+        serviceSupplier.get(reservation.service.id)!,
+        reservation.active,
+        reservation.createdAt
+      )
+  );
+}
+
+async function detailedBusinesses(
+  businessIds: number[]
+): Promise<Map<number, BusinessDetailed>> {
   const map = new Map<number, BusinessDetailed>();
   for (var businessId of businessIds)
     if (!map.get(businessId))
@@ -558,8 +723,7 @@ function detailedBusiness(business: BusinessDTO): BusinessDetailed {
 async function detailedStaffs(staffIds: number[]): Promise<Map<number, Staff>> {
   const map = new Map<number, Staff>();
   for (var staffId of staffIds)
-    if (!map.get(staffId))
-      map.set(staffId, await staffById(staffId));
+    if (!map.get(staffId)) map.set(staffId, await staffById(staffId));
   return map;
 }
 

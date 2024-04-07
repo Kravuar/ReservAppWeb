@@ -15,6 +15,7 @@ export default function ProfileBusinessesTab({
   staffPageSupplier,
   serviceCreationHandler,
   staffInvitationHandler,
+  staffRemovalHandler,
 }: {
   pageSupplier: (page: number) => Promise<Page<BusinessDetailed>>;
   businessCreationHandler: (
@@ -31,6 +32,7 @@ export default function ProfileBusinessesTab({
     subject: string,
     businessId: number
   ) => Promise<void>;
+  staffRemovalHandler: (staffId: number) => Promise<void>;
 }) {
   const [open, setOpen] = useState<boolean>(false);
 
@@ -64,6 +66,7 @@ export default function ProfileBusinessesTab({
             staffPageSupplier={(page) => staffPageSupplier(business.id, page)}
             serviceCreationHandler={(formData) => serviceCreationHandler({businessId: business.id, ...formData})}
             staffInvitationHandler={(subject) => staffInvitationHandler(subject, business.id)}
+            staffRemovalHandler={staffRemovalHandler}
           />
         )}
       />

@@ -1,25 +1,29 @@
-import { ReservationDetailed } from "../../domain/Schedule";
+import { ReservationFromClientDetailed } from "../../domain/Schedule";
 import {
   Card,
   CardHeader,
-  Avatar,
   Divider,
   CardContent,
   Typography,
-  Box,
-  Rating,
   IconButton,
-  Skeleton,
+  Box,
 } from "@mui/material";
-import { AccessTime, Cancel, EditCalendar, Restore } from "@mui/icons-material";
+import {
+  AccessTime,
+  Cancel,
+  EditCalendar,
+  MiscellaneousServices,
+  Restore,
+} from "@mui/icons-material";
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
-export default function ReservationCard({
+export default function ReservationFromClientCard({
   reservation,
   cancelHandler,
   restoreHandler,
 }: {
-  reservation: ReservationDetailed;
+  reservation: ReservationFromClientDetailed;
   cancelHandler: (reservationId: number) => Promise<void>;
   restoreHandler: (reservationId: number) => Promise<void>;
 }) {
@@ -43,24 +47,39 @@ export default function ReservationCard({
       <CardHeader
         avatar={<EditCalendar />}
         title={
-          <Typography
-            variant="h6"
-            color="textSecondary"
-            component="p"
-            gutterBottom
-          >
-            Запись, {reservation.staff.name}
-          </Typography>
+          <Box>
+            <Typography
+              variant="h6"
+              color="textSecondary"
+              component="p"
+              gutterBottom
+            >
+              Запись от {reservation.clientSub}
+            </Typography>
+            <Typography
+              variant="h6"
+              color="textSecondary"
+              component="p"
+              gutterBottom
+            >
+              На услугу
+            </Typography>
+          </Box>
         }
         subheader={
-          reservation.staff && (
-            <Box display="flex" flexDirection={"row"} alignItems="center">
-              <Avatar src={reservation.staff.picture} sx={{ mr: 2 }}>
-                <Skeleton variant="circular" width={40} height={40} />
-              </Avatar>
-              <Rating value={reservation.staff.rating} readOnly />
-            </Box>
-          )
+          <IconButton
+            aria-label="service"
+            aria-haspopup="true"
+            component={Link}
+            to={`/home/services/${reservation.service.id}`}
+            color="inherit"
+            sx={{ borderRadius: 0, px: 0 }}
+          >
+            <MiscellaneousServices sx={{ mr: 1 }} />
+            <Typography variant="h6">
+              {reservation.service.name}
+            </Typography>
+          </IconButton>
         }
       />
       <Divider variant="middle" />

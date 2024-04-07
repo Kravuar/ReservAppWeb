@@ -13,16 +13,19 @@ import {
   staffByBusinessId,
   createService,
   inviteStaff,
+  removeStaff,
+  reservationsToMe,
 } from "../../../services/api";
 import { BusinessDetailed, BusinessFormData } from "../../../domain/Business";
 import { Page } from "../../../domain/Page";
-import { ReservationDetailed } from "../../../domain/Schedule";
+import { ReservationDetailed, ReservationFromClientDetailed } from "../../../domain/Schedule";
 import { LocalDate } from "@js-joda/core";
 import ProfileReservationsTab from "../../parts/ProfileReservationsTab";
-import ProfileReservationsToMeTab from "../../parts/ProfileReservationsToMeTab";
 import { useAlert } from "../../util/Alert";
 import { ServiceDetailed, ServiceFormData } from "../../../domain/Service";
 import { Staff } from "../../../domain/Staff";
+import ReservationCard from "../../parts/ReservationCard";
+import ReservationFromClientCard from "../../parts/ReservationFromClientCard";
 
 export default function ProfilePage() {
   const user = useAuthUser();
@@ -35,7 +38,7 @@ export default function ProfilePage() {
     return withErrorAlert(() => myDetailedBusinesses(page, 10));
   }
 
-  async function onCancelReservation(reservationId: number) {
+  async function reservationCancelHandler(reservationId: number) {
     return withAlert(
       () => withErrorAlert(() => cancelReservation(reservationId)),
       "Запись отменена",
@@ -43,7 +46,7 @@ export default function ProfilePage() {
     );
   }
 
-  async function onReservationRestore(reservationId: number) {
+  async function reservationRestoreHandler(reservationId: number) {
     return withAlert(
       () => withErrorAlert(() => restoreReservation(reservationId)),
       "Запись восстановлена",
@@ -51,11 +54,18 @@ export default function ProfilePage() {
     );
   }
 
-  async function fetchReservations(
+  async function fetchMyReservations(
     from: LocalDate,
     to: LocalDate
   ): Promise<Map<LocalDate, ReservationDetailed[]>> {
     return withErrorAlert(() => myReservations(from, to));
+  }
+
+  async function fetchReservationsToMe(
+    from: LocalDate,
+    to: LocalDate
+  ): Promise<Map<LocalDate, ReservationFromClientDetailed[]>> {
+    return withErrorAlert(() => reservationsToMe(from, to));
   }
 
   async function businessCreationHandler(
@@ -105,6 +115,14 @@ export default function ProfilePage() {
     ).then();
   }
 
+  async function staffRemovalHandler(staffId: number): Promise<void> {
+    return withAlert(
+      () => withErrorAlert(() => removeStaff(staffId)),
+      "Сотрудник отстранён",
+      "success"
+    ).then();
+  }
+
   return (
     <Box display="flex" flexDirection="column" justifyContent="space-between">
       <ProfileCard name={user?.name} />
@@ -115,7 +133,7 @@ export default function ProfilePage() {
           onChange={(_, value) => setTab(value)}
           sx={{ tabSize: 50 }}
         >
-          <Tab label="Мои бизнесы" />
+          <Tab label="Управление бизнесом" />
           <Tab label="Мои записи" />
           <Tab label="Записи ко мне" />
         </Tabs>
@@ -128,19 +146,23 @@ export default function ProfilePage() {
               staffPageSupplier={staffPageSupplier}
               serviceCreationHandler={serviceCreationHandler}
               staffInvitationHandler={staffInvitationHandler}
+              staffRemovalHandler={staffRemovalHandler}
             />
           )}
           {tab === 1 && (
             <ProfileReservationsTab
-              onCancelReservation={onCancelReservation}
-              onReservationRestore={onReservationRestore}
-              reservationsSupplier={fetchReservations}
+              cancelHandler={reservationCancelHandler}
+              restoreHandler={reservationRestoreHandler}
+              reservationsSupplier={fetchMyReservations}
+              CardComponent={ReservationCard}
             />
           )}
           {tab === 2 && (
-            <ProfileReservationsToMeTab
-              onCancelReservation={onCancelReservation}
-              reservationsSupplier={fetchReservations}
+            <ProfileReservationsTab
+              cancelHandler={reservationCancelHandler}
+              restoreHandler={reservationRestoreHandler}
+              reservationsSupplier={fetchReservationsToMe}
+              CardComponent={ReservationFromClientCard}
             />
           )}
         </Box>

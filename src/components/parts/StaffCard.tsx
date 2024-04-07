@@ -17,12 +17,12 @@ export default function StaffCard({ staff }: { staff: Staff }) {
       {/* Staff Picture on the left part */}
       <CardMedia
         component="img"
-        sx={{ width: "30%", padding: 2 }}
+        sx={{ width: "10%", padding: 2, borderRadius: 10 }}
         image={staff.picture}
         alt={staff.name}
       />
       {/* Staff Details on the right part */}
-      <Box sx={{ display: "flex", flexDirection: "column", width: "70%" }}>
+      <Box sx={{ display: "flex", flexDirection: "column", width: "90%" }}>
         <CardContent sx={{ flex: "1 0 auto", position: "relative" }}>
           {/* Staff Name and Rating */}
           <Box display="flex" flexDirection="row" alignItems="center">

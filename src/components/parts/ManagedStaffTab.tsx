@@ -4,14 +4,16 @@ import { Staff } from "../../domain/Staff";
 import { Page } from "../../domain/Page";
 import StaffForm from "./StaffForm";
 import StaffList from "./StaffList";
-import StaffCard from "./StaffCard";
+import ManagedStaffCard from "./ManagedStaffCard";
 
 export default function ManagedStaffTab({
   pageSupplier,
   staffInvitationHandler,
+  removeHandler,
 }: {
   pageSupplier: (page: number) => Promise<Page<Staff>>;
   staffInvitationHandler: (subject: string) => Promise<void>;
+  removeHandler: (staffId: number) => Promise<void>;
 }) {
   const [createOpen, setCreateOpen] = useState(false);
 
@@ -27,7 +29,15 @@ export default function ManagedStaffTab({
       <Collapse in={createOpen} sx={{ my: 3 }}>
         <StaffForm onSubmit={staffInvitationHandler} />
       </Collapse>
-      <StaffList pageSupplier={pageSupplier} CardComponent={(staff) => <StaffCard staff={staff}/>}/>
+      <StaffList
+        pageSupplier={pageSupplier}
+        CardComponent={(staff) => (
+          <ManagedStaffCard
+            staff={staff}
+            removeHandler={() => removeHandler(staff.id)}
+          />
+        )}
+      />
     </Box>
   );
 }

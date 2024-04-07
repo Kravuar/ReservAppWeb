@@ -1,25 +1,27 @@
 import { LocalDate } from "@js-joda/core";
 import { ReservationDetailed } from "../../domain/Schedule";
-import ReservationBody from "./ReservationsBody";
+import ReservationBody, { ReservationCardProps } from "./ReservationsBody";
 import { Box } from "@mui/material";
 import { useState } from "react";
 import WeekSelector from "./WeekSelector";
 
-export default function ProfileReservationsTab({
-  onCancelReservation,
-  onReservationRestore,
+export default function ProfileReservationsTab<ReservationType extends ReservationDetailed>({
+  cancelHandler,
+  restoreHandler,
   reservationsSupplier,
+  CardComponent
 }: {
-  onCancelReservation: (reservationId: number) => Promise<void>;
-  onReservationRestore: (reservationId: number) => Promise<void>;
+  cancelHandler: (reservationId: number) => Promise<void>;
+  restoreHandler: (reservationId: number) => Promise<void>;
   reservationsSupplier: (
     from: LocalDate,
     to: LocalDate
-  ) => Promise<Map<LocalDate, ReservationDetailed[]>>;
+  ) => Promise<Map<LocalDate, ReservationType[]>>;
+  CardComponent: React.ComponentType<ReservationCardProps<ReservationType>>;
 }) {
   const [selectedDate, setSelectedDate] = useState<LocalDate>(LocalDate.now());
   const [schedule, setSchedule] = useState<
-    Map<LocalDate, ReservationDetailed[]>
+    Map<LocalDate, ReservationType[]>
   >(new Map());
 
   function handleWeekChange(
@@ -38,8 +40,9 @@ export default function ProfileReservationsTab({
       <WeekSelector onAccept={handleWeekChange} date={selectedDate} />
       <ReservationBody
         schedule={schedule}
-        onCancelReservation={onCancelReservation}
-        onReservationRestore={onReservationRestore}
+        cancelHandler={cancelHandler}
+        restoreHandler={restoreHandler}
+        CardComponent={CardComponent}
       />
     </Box>
   );
