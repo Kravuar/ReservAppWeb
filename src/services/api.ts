@@ -455,8 +455,11 @@ export async function createService(
   formData: ServiceFormData
 ): Promise<ServiceDetailed> {
   const response = await axios.post<Service>(
-    `services/api-v1/management/create`,
-    formData
+    `services/api-v1/management/create/${formData.businessId}`,
+    {
+      name: formData.name,
+      description: formData.description,
+    }
   );
   return detailedService(response.data);
 }
