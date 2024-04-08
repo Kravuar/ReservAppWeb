@@ -1,9 +1,9 @@
-import BusinessList from "../../parts/BusinessList";
 import { Page } from "../../../domain/Page";
 import { BusinessDetailed } from "../../../domain/Business";
 import { activeDetailedBusinesses } from "../../../services/api";
 import { useAlert } from "../../util/Alert";
 import BusinessCard from "../../parts/BusinessCard";
+import CardList from "../../parts/CardList";
 
 export default function BusinessesPage() {
   const { withErrorAlert } = useAlert();
@@ -12,5 +12,5 @@ export default function BusinessesPage() {
       return withErrorAlert(() => activeDetailedBusinesses(page, 10));
   }
 
-  return <BusinessList pageSupplier={fetchData} CardComponent={(business) => <BusinessCard business={business}/>} />;
+  return <CardList pageSupplier={fetchData} CardComponent={(props) => <BusinessCard business={props.item}/>} />;
 }

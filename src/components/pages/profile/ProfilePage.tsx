@@ -15,6 +15,10 @@ import {
   inviteStaff,
   removeStaff,
   reservationsToMe,
+  getMyInvitations,
+  getInvitationsOfBusiness,
+  acceptInvitation,
+  declineInvitation,
 } from "../../../services/api";
 import { BusinessDetailed, BusinessFormData } from "../../../domain/Business";
 import { Page } from "../../../domain/Page";
@@ -23,9 +27,10 @@ import { LocalDate } from "@js-joda/core";
 import ProfileReservationsTab from "../../parts/ProfileReservationsTab";
 import { useAlert } from "../../util/Alert";
 import { ServiceDetailed, ServiceFormData } from "../../../domain/Service";
-import { Staff } from "../../../domain/Staff";
+import { Staff, StaffInvitationDetailed } from "../../../domain/Staff";
 import ReservationCard from "../../parts/ReservationCard";
 import ReservationFromClientCard from "../../parts/ReservationFromClientCard";
+import ProfileInvitationTab from "../../parts/ProfileInvitationTab";
 
 export default function ProfilePage() {
   const user = useAuthUser();
@@ -123,6 +128,30 @@ export default function ProfilePage() {
     ).then();
   }
 
+  async function invitationSupplierByUser(page: number): Promise<Page<StaffInvitationDetailed>> {
+    return withErrorAlert(() => getMyInvitations(page, 10));
+  }
+  
+  async function invitationSupplierByBusiness(businessId: number, page: number): Promise<Page<StaffInvitationDetailed>> {
+    return withErrorAlert(() => getInvitationsOfBusiness(businessId, page, 10));
+  }
+
+  async function acceptInvitationHandler(invitationId: number): Promise<void> {
+    return withAlert(
+      () => withErrorAlert(() => acceptInvitation(invitationId)),
+      "Приглашение принято",
+      "success"
+    ).then();
+  }
+
+  async function declineInvitationHandler(invitationId: number): Promise<void> {
+    return withAlert(
+      () => withErrorAlert(() => declineInvitation(invitationId)),
+      "Приглашение отклонено  ",
+      "success"
+    ).then();
+  }
+
   return (
     <Box display="flex" flexDirection="column" justifyContent="space-between">
       <ProfileCard name={user?.name} />
@@ -136,6 +165,7 @@ export default function ProfilePage() {
           <Tab label="Управление бизнесом" />
           <Tab label="Мои записи" />
           <Tab label="Записи ко мне" />
+          <Tab label="Мои приглашения" />
         </Tabs>
         <Box sx={{ padding: 3 }}>
           {tab === 0 && (
@@ -144,9 +174,11 @@ export default function ProfilePage() {
               businessCreationHandler={businessCreationHandler}
               servicePageSupplier={servicePageSupplier}
               staffPageSupplier={staffPageSupplier}
+              invitationPageSupplier={invitationSupplierByBusiness}
               serviceCreationHandler={serviceCreationHandler}
               staffInvitationHandler={staffInvitationHandler}
               staffRemovalHandler={staffRemovalHandler}
+              invitationDeclineHandler={declineInvitationHandler}
             />
           )}
           {tab === 1 && (
@@ -163,6 +195,13 @@ export default function ProfilePage() {
               restoreHandler={reservationRestoreHandler}
               reservationsSupplier={fetchReservationsToMe}
               CardComponent={ReservationFromClientCard}
+            />
+          )}
+          {tab === 3 && (
+            <ProfileInvitationTab
+              pageSupplier={invitationSupplierByUser}
+              acceptHandler={acceptInvitationHandler}
+              declineHandler={declineInvitationHandler}
             />
           )}
         </Box>

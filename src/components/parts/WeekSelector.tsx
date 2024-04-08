@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { LocalizationProvider, StaticDatePicker } from "@mui/x-date-pickers";
-import { AdapterLuxon } from "@mui/x-date-pickers/AdapterLuxon";
+import { StaticDatePicker } from "@mui/x-date-pickers";
 import { DayOfWeek, LocalDate, TemporalAdjusters } from "@js-joda/core";
 import { DateTime } from "luxon";
 import { Box, IconButton } from "@mui/material";

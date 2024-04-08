@@ -18,6 +18,6 @@ export default function ServicesPage() {
   }
 
   return (
-    <ServiceList searchPageSupplier={fetchDataWithName} CardComponent={(service) => <ServiceWithBusinessCard service={service}/>}/>
+    <ServiceList searchPageSupplier={fetchDataWithName} CardComponent={(props) => <ServiceWithBusinessCard service={props.item}/>}/>
   );
 }

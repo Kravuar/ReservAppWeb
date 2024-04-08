@@ -3,7 +3,7 @@ import axios from "axios";
 import { BusinessDetailed, BusinessFormData } from "../domain/Business";
 import { Page } from "../domain/Page";
 import { Service, ServiceDetailed, ServiceFormData } from "../domain/Service";
-import { Staff, StaffBusiness, StaffInvitation } from "../domain/Staff";
+import { Staff, StaffBusiness, StaffInvitation, StaffInvitationDetailed } from "../domain/Staff";
 import {
   Reservation,
   ReservationDetailed,
@@ -158,6 +158,24 @@ async function scheduleToDetailed(
       ];
     })
   );
+}
+
+async function detailedInvitations(invitations: Page<StaffInvitation>): Promise<Page<StaffInvitationDetailed>> {
+  const businesses = await detailedBusinesses(
+    invitations.content
+      .map((invitation) => invitation.business.id)
+  );
+
+  return {
+    content: invitations.content.map(invitation => new StaffInvitationDetailed(
+      invitation.id,
+      invitation.sub,
+      businesses.get(invitation.business.id)!,
+      LocalDateTime.parse(invitation.createdAt),
+      invitation.status
+    )),
+    totalPages: invitations.totalPages
+  }
 }
 
 export async function detailedBusinessById(
@@ -479,6 +497,36 @@ export async function removeStaff(staffId: number): Promise<void> {
     `staff/api-v1/management/remove-staff/${staffId}`
   );
   return response.data;
+}
+
+export async function acceptInvitation(invitationId: number): Promise<void> {
+  const response = await axios.post<void>(
+    `staff/api-v1/management/accept-invitation/${invitationId}`
+  );
+  return response.data;
+}
+
+export async function declineInvitation(invitationId: number): Promise<void> {
+  const response = await axios.post<void>(
+    `staff/api-v1/management/declline-invitation/${invitationId}`
+  );
+  return response.data;
+}
+
+export async function getMyInvitations(page: number, pageSize: number): Promise<Page<StaffInvitationDetailed>> {
+  const response = await axios.get<Page<StaffInvitation>>(
+    `staff/api-v1/retrieval//invitations-by-sub/${paginationAdjustment(page)}/${pageSize}`
+  );
+
+  return detailedInvitations(response.data);
+}
+
+export async function getInvitationsOfBusiness(businessId: number, page: number, pageSize: number): Promise<Page<StaffInvitationDetailed>> {
+  const response = await axios.get<Page<StaffInvitation>>(
+    `staff/api-v1/retrieval//invitations-by-business/${businessId}/${paginationAdjustment(page)}/${pageSize}`
+  );
+  
+  return detailedInvitations(response.data);
 }
 
 class BusinessDTO {

@@ -30,9 +30,12 @@ export default function ManagedStaffCard({
           aria-label="manage staff"
           component="span"
           sx={{
-            border: 2,
+            border: 4,
             borderBottom: 0,
-            borderRadius: 0,
+            borderTopLeftRadius: 20,
+            borderTopRightRadius: 20,
+            borderBottomLeftRadius: 0,
+            borderBottomRightRadius: 0,
           }}
           onClick={handleAction}
           disabled={!enabled}

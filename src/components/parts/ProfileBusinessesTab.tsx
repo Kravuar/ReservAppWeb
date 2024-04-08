@@ -1,4 +1,3 @@
-import BusinessList from "./BusinessList";
 import { Page } from "../../domain/Page";
 import { BusinessDetailed, BusinessFormData } from "../../domain/Business";
 import { useState } from "react";
@@ -6,16 +5,19 @@ import { Box, Button, Collapse } from "@mui/material";
 import BusinessForm from "./BusinessForm";
 import ManagedBusinessCard from "./ManagedBusinessCard";
 import { ServiceDetailed, ServiceFormData } from "../../domain/Service";
-import { Staff } from "../../domain/Staff";
+import { Staff, StaffInvitationDetailed } from "../../domain/Staff";
+import CardList from "./CardList";
 
 export default function ProfileBusinessesTab({
   pageSupplier,
   businessCreationHandler,
   servicePageSupplier,
   staffPageSupplier,
+  invitationPageSupplier,
   serviceCreationHandler,
   staffInvitationHandler,
   staffRemovalHandler,
+  invitationDeclineHandler
 }: {
   pageSupplier: (page: number) => Promise<Page<BusinessDetailed>>;
   businessCreationHandler: (
@@ -27,12 +29,14 @@ export default function ProfileBusinessesTab({
     page: number
   ) => Promise<Page<ServiceDetailed>>;
   staffPageSupplier: (businessId: number, page: number) => Promise<Page<Staff>>;
+  invitationPageSupplier: (businessId: number, page: number) => Promise<Page<StaffInvitationDetailed>>;
   serviceCreationHandler: (formData: ServiceFormData) => Promise<void>;
   staffInvitationHandler: (
     subject: string,
     businessId: number
   ) => Promise<void>;
   staffRemovalHandler: (staffId: number) => Promise<void>;
+  invitationDeclineHandler: (invitationId: number) => Promise<void>;
 }) {
   const [open, setOpen] = useState<boolean>(false);
 
@@ -45,28 +49,41 @@ export default function ProfileBusinessesTab({
   return (
     <Box display="flex" flexDirection="column">
       <Box sx={{ my: 2 }}>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => setOpen(!open)}
-          sx={{ my: 2 }}
+        <Box
+          sx={{ display: "flex", flexDirection: "column", alignItems: "end" }}
         >
-          {open ? "Скрыть" : "Создать бизнес"}
-        </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => setOpen(!open)}
+            sx={{ my: 2 }}
+          >
+            {open ? "Скрыть" : "Создать бизнес"}
+          </Button>
+        </Box>
+
         <Collapse in={open}>
           <BusinessForm onSubmit={onCreate} />
         </Collapse>
       </Box>
-      <BusinessList
+      <CardList
         pageSupplier={pageSupplier}
-        CardComponent={(business) => (
+        CardComponent={(props) => (
           <ManagedBusinessCard
-            business={business}
-            servicePageSupplier={(name, page) => servicePageSupplier(business.id, name, page)}
-            staffPageSupplier={(page) => staffPageSupplier(business.id, page)}
-            serviceCreationHandler={(formData) => serviceCreationHandler({businessId: business.id, ...formData})}
-            staffInvitationHandler={(subject) => staffInvitationHandler(subject, business.id)}
+            business={props.item}
+            servicePageSupplier={(name, page) =>
+              servicePageSupplier(props.item.id, name, page)
+            }
+            staffPageSupplier={(page) => staffPageSupplier(props.item.id, page)}
+            invitationPageSupplier={(page) => invitationPageSupplier(props.item.id, page)}
+            serviceCreationHandler={(formData) =>
+              serviceCreationHandler({ businessId: props.item.id, ...formData })
+            }
+            staffInvitationHandler={(subject) =>
+              staffInvitationHandler(subject, props.item.id)
+            }
             staffRemovalHandler={staffRemovalHandler}
+            invitationDeclineHandler={invitationDeclineHandler}
           />
         )}
       />

@@ -4,7 +4,7 @@ import BusinessCard from "./BusinessCard";
 import { BusinessDetailed } from "../../domain/Business";
 import { Page } from "../../domain/Page";
 import { ServiceDetailed } from "../../domain/Service";
-import { Staff } from "../../domain/Staff";
+import { Staff, StaffInvitationDetailed } from "../../domain/Staff";
 import ManagedServicesTab from "./ManagedServiceTab";
 import ManagedStaffTab from "./ManagedStaffTab";
 import { ServiceFormData } from "./ServiceForm";
@@ -13,9 +13,11 @@ export default function ManagedBusinessCard({
   business,
   servicePageSupplier,
   staffPageSupplier,
+  invitationPageSupplier,
   serviceCreationHandler,
   staffInvitationHandler,
   staffRemovalHandler,
+  invitationDeclineHandler
 }: {
   business: BusinessDetailed;
   servicePageSupplier: (
@@ -23,9 +25,11 @@ export default function ManagedBusinessCard({
     page: number
   ) => Promise<Page<ServiceDetailed>>;
   staffPageSupplier: (page: number) => Promise<Page<Staff>>;
+  invitationPageSupplier: (page: number) => Promise<Page<StaffInvitationDetailed>>;
   serviceCreationHandler: (formData: ServiceFormData) => Promise<void>;
   staffInvitationHandler: (subject: string) => Promise<void>;
   staffRemovalHandler: (staffId: number) => Promise<void>;
+  invitationDeclineHandler: (invitationId: number) => Promise<void>;
 }) {
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState(0);
@@ -48,8 +52,8 @@ export default function ManagedBusinessCard({
       <Collapse in={open}>
         <Box sx={{ mt: 2 }}>
           <Tabs value={tab} onChange={(_, value) => setTab(value)}>
-            <Tab label="Услуги" />
-            <Tab label="Персонал" />
+            <Tab label="Управление Услугами" />
+            <Tab label="Управление Персоналом" />
           </Tabs>
         </Box>
         <Box sx={{ mt: 2 }}>
@@ -61,9 +65,11 @@ export default function ManagedBusinessCard({
           )}
           {tab === 1 && (
             <ManagedStaffTab
-              pageSupplier={staffPageSupplier}
+              staffPageSupplier={staffPageSupplier}
+              invitationPageSupplier={invitationPageSupplier}
               staffInvitationHandler={staffInvitationHandler}
               removeHandler={staffRemovalHandler}
+              declineHandler={invitationDeclineHandler}
             />
           )}
         </Box>

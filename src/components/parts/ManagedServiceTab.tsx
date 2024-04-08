@@ -8,7 +8,7 @@ import ServiceCard from "./ServiceCard";
 
 export default function ManagedServicesTab({
   pageSupplier,
-  serviceCreationHandler
+  serviceCreationHandler,
 }: {
   pageSupplier: (name: string, page: number) => Promise<Page<ServiceDetailed>>;
   serviceCreationHandler: (formData: ServiceFormData) => Promise<void>;
@@ -17,17 +17,23 @@ export default function ManagedServicesTab({
 
   return (
     <Box>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={() => setCreateOpen(!createOpen)}
-      >
-        {createOpen ? "Скрыть" : "Добавить услугу"}
-      </Button>
-      <Collapse in={createOpen} sx={{my: 3}}>
+      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "end" }}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => setCreateOpen(!createOpen)}
+        >
+          {createOpen ? "Скрыть" : "Добавить услугу"}
+        </Button>
+      </Box>
+
+      <Collapse in={createOpen} sx={{ my: 3 }}>
         <ServiceForm onSubmit={serviceCreationHandler} />
       </Collapse>
-      <ServiceList searchPageSupplier={pageSupplier} CardComponent={(service) => <ServiceCard service={service}/>}/>
+      <ServiceList
+        searchPageSupplier={pageSupplier}
+        CardComponent={(props) => <ServiceCard service={props.item} />}
+      />
     </Box>
   );
 }
