@@ -142,38 +142,40 @@ export class ReservationFromClientDetailed extends ReservationDetailed {
 }
 
 export class Reservation {
-  constructor(
-    public id: number,
-    public date: LocalDate,
-    public start: LocalTime,
-    public end: LocalTime,
-    public staff: ScheduleStaff,
-    public service: ScheduleService,
-    public active: boolean,
-    public createdAt: LocalDateTime
-  ) {}
-}
-
-export class ReservationFromClient {
   date: LocalDate;
   start: LocalTime;
   end: LocalTime;
   createdAt: LocalDateTime;
-  
+
   constructor(
     public id: number,
     date: string | LocalDate,
     start: string | LocalTime,
     end: string | LocalTime,
-    public clientSub: string,
     public staff: ScheduleStaff,
     public service: ScheduleService,
     public active: boolean,
     createdAt: string | LocalDateTime
   ) {
+    this.date = date instanceof LocalDate ? date : LocalDate.parse(date);
     this.start = start instanceof LocalTime ? start : LocalTime.parse(start);
     this.end = end instanceof LocalTime ? end : LocalTime.parse(end);
-    this.date = date instanceof LocalDate ? date : LocalDate.parse(date);
     this.createdAt = createdAt instanceof LocalDateTime ? createdAt : LocalDateTime.parse(createdAt);
+  }
+}
+
+export class ReservationFromClient extends Reservation {
+  constructor(
+    id: number,
+    date: string | LocalDate,
+    start: string | LocalTime,
+    end: string | LocalTime,
+    public clientSub: string,
+    staff: ScheduleStaff,
+    service: ScheduleService,
+    active: boolean,
+    createdAt: string | LocalDateTime
+  ) {
+    super(id, date, start, end, staff, service, active, createdAt);
   }
 }

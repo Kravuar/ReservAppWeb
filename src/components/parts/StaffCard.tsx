@@ -28,7 +28,7 @@ export default function StaffCard({ staff }: { staff: Staff }) {
           <Box display="flex" flexDirection="row" alignItems="center">
             <Typography component="div" variant="h3">
               <Button component={Link} to={`/profile/business/staff/${staff.id}`}>
-                {staff.name}
+                {staff.name} ({staff.sub})
               </Button>
             </Typography>
             <Rating value={staff.rating} readOnly />

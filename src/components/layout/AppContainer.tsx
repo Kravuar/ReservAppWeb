@@ -7,6 +7,7 @@ import ServicePage from "../pages/public/ServicePage";
 import ServicesPage from "../pages/public/ServicesPage";
 import BusinessPage from "../pages/public/BusinessPage";
 import ProfilePage from "../pages/profile/ProfilePage";
+import StaffPage from "../pages/profile/StaffPage";
 
 export default function AppContainer() {
   return (
@@ -21,7 +22,14 @@ export default function AppContainer() {
       <Container sx={{ marginY: 2 }}>
         <Routes>
           <Route element={<RequiredAuth />}>
-            <Route path="profile" element={<ProfilePage />} />
+            <Route path="profile">
+              <Route path="business">
+                <Route path="staff">
+                  <Route path=":id" element={<StaffPage />} />
+                </Route>
+              </Route>
+              <Route index element={<ProfilePage />}/>
+            </Route>
           </Route>
           <Route path="home">
             <Route path="services">
