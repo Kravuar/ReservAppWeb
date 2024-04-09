@@ -27,7 +27,7 @@ export default function StaffCard({ staff }: { staff: Staff }) {
           {/* Staff Name and Rating */}
           <Box display="flex" flexDirection="row" alignItems="center">
             <Typography component="div" variant="h3">
-              <Button component={Link} to={`/home/staff/${staff.id}`}>
+              <Button component={Link} to={`/profile/business/staff/${staff.id}`}>
                 {staff.name}
               </Button>
             </Typography>

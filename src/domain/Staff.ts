@@ -21,23 +21,45 @@ export enum InvitationStatus {
 }
 
 export class StaffInvitation {
+  id: number;
+  sub: string;
+  business: StaffBusiness;
+  createdAt: LocalDateTime;
+  status: InvitationStatus;
+
   constructor(
-    public id: number,
-    public sub: string,
-    public business: StaffBusiness,
-    public createdAt: string,
-    public status: InvitationStatus
-  ) {}
+    id: number,
+    sub: string,
+    business: StaffBusiness,
+    createdAt: string | LocalDateTime,
+    status: InvitationStatus
+  ) {
+    this.id = id;
+    this.sub = sub;
+    this.business = business;
+    this.createdAt =
+      createdAt instanceof LocalDateTime
+        ? createdAt
+        : LocalDateTime.parse(createdAt);
+    this.status = status;
+  }
 }
 
 export class StaffInvitationDetailed {
+  createdAt: LocalDateTime;
+
   constructor(
     public id: number,
     public sub: string,
     public business: BusinessDetailed,
-    public createdAt: LocalDateTime,
+    createdAt: string | LocalDateTime,
     public status: InvitationStatus
-  ) {}
+  ) {
+    this.createdAt = 
+    createdAt instanceof LocalDateTime
+        ? createdAt
+        : LocalDateTime.parse(createdAt);
+  }
 }
 
 export class StaffBusiness {

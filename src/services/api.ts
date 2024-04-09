@@ -9,11 +9,11 @@ import {
   ReservationDetailed,
   ReservationFromClient,
   ReservationFromClientDetailed,
+  ReservationSlot,
   ReservationSlotDetailed,
-  ScheduleService,
   ScheduleStaff,
 } from "../domain/Schedule";
-import { LocalDate, LocalDateTime, LocalTime } from "@js-joda/core";
+import { LocalDate, LocalDateTime } from "@js-joda/core";
 
 function paginationAdjustment(page: number): number {
   return page - 1;
@@ -63,7 +63,7 @@ async function megaDetailedReservationsDTO(
   const reservationData = await Promise.all(
     dates.map(async (date) =>
       megaDetailedReservations(
-        reservations[date].map(detailedReservation),
+        reservations[date],
         staffs,
         services
       )
@@ -103,7 +103,7 @@ async function megaDetailedReservationsFromClientDTO(
   const reservationData = await Promise.all(
     dates.map(async (date) =>
       megaDetailedReservationsFromClient(
-        reservations[date].map(detailedReservationFromClient),
+        reservations[date],
         staffs,
         services
       )
@@ -137,18 +137,16 @@ async function scheduleToDetailed(
             date,
             reservations
           );
-          const start = LocalTime.parse(slot.start);
-          const end = LocalTime.parse(slot.end);
           const reservationsCount = sameDayReservations
             ? sameDayReservations.filter(
                 (reservation) =>
                   reservation.staff.id === staffId &&
-                  reservation.start.equals(start)
+                  reservation.start.equals(slot.start)
               ).length
             : 0;
           return new ReservationSlotDetailed(
-            start,
-            end,
+            slot.start,
+            slot.end,
             slot.cost,
             slot.maxReservations,
             slot.maxReservations - reservationsCount,
@@ -171,7 +169,7 @@ async function detailedInvitations(invitations: Page<StaffInvitation>): Promise<
       invitation.id,
       invitation.sub,
       businesses.get(invitation.business.id)!,
-      LocalDateTime.parse(invitation.createdAt),
+      invitation.createdAt,
       invitation.status
     )),
     totalPages: invitations.totalPages
@@ -347,7 +345,7 @@ export async function reservationsByServiceAndStaff(
   return new Map(
     Array.from(Object.keys(reservations), (date) => [
       LocalDate.parse(date),
-      reservations[date].map(detailedReservation),
+      reservations[date],
     ])
   );
 }
@@ -364,7 +362,7 @@ export async function reservationsByService(
   return new Map(
     Array.from(Object.keys(reservations), (date) => [
       LocalDate.parse(date),
-      reservations[date].map(detailedReservation),
+      reservations[date],
     ])
   );
 }
@@ -554,52 +552,16 @@ class SchedulesByServiceDTO {
   constructor(public staff: ScheduleStaff, public schedule: ScheduleDTO) {}
 }
 
-class ReservationSlotDTO {
-  constructor(
-    public start: string,
-    public end: string,
-    public cost: number,
-    public maxReservations: number
-  ) {}
-}
-
-class ReservationDTO {
-  constructor(
-    public id: number,
-    public date: string,
-    public start: string,
-    public end: string,
-    public staff: ScheduleStaff,
-    public service: ScheduleService,
-    public active: boolean,
-    public createdAt: string
-  ) {}
-}
-
-class ReservationFromClientDTO {
-  constructor(
-    public id: number,
-    public date: string,
-    public start: string,
-    public end: string,
-    public clientSub: string,
-    public staff: ScheduleStaff,
-    public service: ScheduleService,
-    public active: boolean,
-    public createdAt: string
-  ) {}
-}
-
 class ScheduleDTO {
-  [date: string]: ReservationSlotDTO[];
+  [date: string]: ReservationSlot[];
 }
 
 class ReservationsDTO {
-  [date: string]: ReservationDTO[];
+  [date: string]: Reservation[];
 }
 
 class ReservationsFromClientDTO {
-  [date: string]: ReservationFromClientDTO[];
+  [date: string]: ReservationFromClient[];
 }
 
 export function jodaTsMapIsRetardedGet<V>(
@@ -676,35 +638,6 @@ async function detailedServices(
       );
     }
   return map;
-}
-
-function detailedReservation(reservation: ReservationDTO): Reservation {
-  return new Reservation(
-    reservation.id,
-    LocalDate.parse(reservation.date),
-    LocalTime.parse(reservation.start),
-    LocalTime.parse(reservation.end),
-    reservation.staff,
-    reservation.service,
-    reservation.active,
-    LocalDateTime.parse(reservation.createdAt)
-  );
-}
-
-function detailedReservationFromClient(
-  reservation: ReservationFromClientDTO
-): ReservationFromClient {
-  return new ReservationFromClient(
-    reservation.id,
-    LocalDate.parse(reservation.date),
-    LocalTime.parse(reservation.start),
-    LocalTime.parse(reservation.end),
-    reservation.clientSub,
-    reservation.staff,
-    reservation.service,
-    reservation.active,
-    LocalDateTime.parse(reservation.createdAt)
-  );
 }
 
 async function megaDetailedReservations(

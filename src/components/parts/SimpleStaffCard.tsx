@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 
 export default function SimpleStaffCard({ staff }: { staff: Staff }) {
   return (
-    <IconButton component={Link} to={`/home/staff/${staff.id}`}>
+    <IconButton component={Link} to={`/profile/business/staff/${staff.id}`}>
       <Avatar src={staff.picture}>
         <Skeleton variant="circular" width={40} height={40} />
       </Avatar>
