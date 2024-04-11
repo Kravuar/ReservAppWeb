@@ -5,12 +5,20 @@ import ErrorPage from "../../util/ErrorPage";
 import { useAlert } from "../../util/Alert";
 import { Staff } from "../../../domain/Staff";
 import StaffCard from "../../parts/StaffCard";
-import { staffById } from "../../../services/api";
+import {
+  getActiveScheduleOfStaffAndService as activeScheduleOfStaffAndService,
+  servicesByBusiness,
+  staffById,
+} from "../../../services/api";
+import { Schedule } from "../../../domain/Schedule";
+import { Service, ServiceDetailed } from "../../../domain/Service";
+import { Page } from "../../../domain/Page";
 
 export default function StaffPage() {
   const id = Number(useParams<{ id: string }>().id);
   const { withAlert, withErrorAlert } = useAlert();
   const [staff, setStaff] = useState<Staff | null>(null);
+  const [schedule, setSchedule] = useState<Schedule[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -23,20 +31,28 @@ export default function StaffPage() {
       .catch((error) => setError(error));
   }, [id]);
 
-  if (staff)
-    return (
-      <Box
-      display="flex"
-      flexDirection="column"
-      justifyContent="space-between"
-    >
-      <StaffCard staff={staff}/>
-      <Box sx={{ display: "flex", flexDirection: "column" }}>
-        Расписания
-      </Box>
-    </Box>
+  async function scheduleSupplier(): Promise<Schedule[]> {
+    if (staff)
+      return withErrorAlert(() =>
+        activeScheduleOfStaffAndService(staff.id, serviceId)
+      );
+    return [];
+  }
+
+  async function serviceSupplier(page: number): Promise<ServiceDetailed[]> {
+    return withErrorAlert(() =>
+      servicesByBusiness(staff.business.id, page, 10)
     );
-  else if (error) return <ErrorPage message={error} />;
+  }
+
+  if (staff) {
+    return (
+      <Box display="flex" flexDirection="column" justifyContent="space-between">
+        <StaffCard staff={staff} />
+        <Box sx={{ display: "flex", flexDirection: "column" }}></Box>
+      </Box>
+    );
+  } else if (error) return <ErrorPage message={error} />;
   else return <SkeletonBody />;
 }
 
@@ -66,5 +82,35 @@ function SkeletonBody() {
         </CardContent>
       </Box>
     </Card>
+  );
+}
+
+function ServiceTabs({
+  serviceSupplier,
+  onSelect,
+}: {
+  serviceSupplier: (page: number) => Page<ServiceDetailed>;
+  onSelect: (serviceId: number) => void;
+}) {
+  
+
+  return (
+    <Tabs
+      value={staff.id}
+      onChange={(_, newStaffId) => handleStaffChange(newStaffId)}
+      variant="scrollable"
+      scrollButtons="auto"
+      aria-label="staff tabs"
+      orientation="vertical"
+    >
+      {staffList?.content.map((staff) => (
+        <Tab
+          label={staff.name}
+          value={staff.id}
+          key={staff.id}
+          icon={<Avatar src={staff.picture} />}
+        />
+      ))}
+    </Tabs>
   );
 }

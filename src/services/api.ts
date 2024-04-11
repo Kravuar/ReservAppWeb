@@ -11,6 +11,7 @@ import {
   ReservationFromClientDetailed,
   ReservationSlot,
   ReservationSlotDetailed,
+  Schedule,
   ScheduleStaff,
 } from "../domain/Schedule";
 import { LocalDate, LocalDateTime } from "@js-joda/core";
@@ -430,6 +431,13 @@ export async function scheduleByService(
   );
 
   return bullshit;
+}
+
+export async function getActiveScheduleOfStaffAndService(staffId: number, serviceId: number) {
+  const response = await axios.get<Schedule[]>(
+    `schedule/api-v1/retrieval/by-staff-and-service/${staffId}/${serviceId}`
+  );
+  return response.data;
 }
 
 export async function reserveSlot(

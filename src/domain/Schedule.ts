@@ -45,7 +45,6 @@ export class Schedule {
     public service: ScheduleService,
     public patterns: SchedulePattern[],
     createdAt: string | LocalDateTime,
-    public active: boolean
   ) {
     this.start = start instanceof LocalDate ? start : LocalDate.parse(start);
     this.end = end instanceof LocalDate ? end : LocalDate.parse(end);
