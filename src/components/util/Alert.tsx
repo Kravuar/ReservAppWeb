@@ -38,7 +38,11 @@ export function AlertProvider({ children }: AlertProviderProps) {
   }, []);
 
   async function withErrorAlert<T>(promise: () => Promise<T>, severity: AlertState['severity'] = 'error'): Promise<T> {
-    return promise().catch(error => {showAlert(error.message, severity); return Promise.reject(error)});
+    return promise().catch(error => {
+      const message = error.message ? error.message : error;
+      showAlert(message, severity); 
+      return Promise.reject(error)
+    });
   }
 
   async function withAlert<T>(promise: () => Promise<T>, message: string, severity: AlertState['severity'] = 'info'): Promise<T> {

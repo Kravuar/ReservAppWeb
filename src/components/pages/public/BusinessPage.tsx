@@ -12,8 +12,8 @@ import { useAlert } from "../../util/Alert";
 export default function BusinessPage() {
   const id = Number(useParams<{ id: string }>().id);
   const { withErrorAlert } = useAlert();
-  const [business, setBusiness] = useState<BusinessDetailed | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [business, setBusiness] = useState<BusinessDetailed>();
+  const [error, setError] = useState<string>();
 
   useEffect(() => {
     if (Number.isNaN(id)) {

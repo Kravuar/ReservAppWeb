@@ -12,13 +12,13 @@ import {
   Money,
 } from "@mui/icons-material";
 import { ReservationSlot } from "../../domain/Schedule";
+import { ChronoUnit } from "@js-joda/core";
 
 export default function SimpleReservationSlotCard({
   reservationSlot,
 }: {
   reservationSlot: ReservationSlot;
 }) {
-
   return (
     <Card sx={{ m: 2 }}>
       <CardHeader
@@ -42,7 +42,7 @@ export default function SimpleReservationSlotCard({
           sx={{ display: "flex", alignItems: "center", mb: 2 }}
         >
           <AccessTime sx={{ mr: 1 }} />
-          {`${reservationSlot.start.toString()} - ${reservationSlot.end.toString()}`}
+          {`${reservationSlot.start.truncatedTo(ChronoUnit.MINUTES).toString()} - ${reservationSlot.end.truncatedTo(ChronoUnit.MINUTES).toString()}`}
         </Typography>
         <Typography
           variant="body1"

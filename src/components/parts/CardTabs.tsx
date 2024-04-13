@@ -2,7 +2,7 @@ import { Box, Pagination, Tab, Tabs } from "@mui/material";
 import { Page } from "../../domain/Page";
 import { useEffect, useState } from "react";
 
-export default function CardList<T>({
+export default function CardTabs<T>({
   pageSupplier,
   CardComponent,
   horizontal,
@@ -19,7 +19,9 @@ export default function CardList<T>({
 
   useEffect(() => {
     pageSupplier(pageNumber)
-      .then((page) => setPage(page))
+      .then((page) => {
+        setPage(page);
+      })
       .catch(() => {});
   }, [pageNumber, pageSupplier]);
 
@@ -51,11 +53,9 @@ export default function CardList<T>({
         aria-label="staff tabs"
         orientation={horizontal ? "horizontal" : "vertical"}
       >
-        {/* {page?.content.map((item) => (
-          <Tab>
-            <CardComponent item={item} />
-          </Tab>
-        ))} */}
+        {page?.content.map((item, idx) => (
+          <Tab key={idx} icon={<CardComponent item={item} />} />
+        ))}
       </Tabs>
     </Box>
   );

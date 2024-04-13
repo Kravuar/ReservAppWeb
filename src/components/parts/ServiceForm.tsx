@@ -103,7 +103,7 @@ export default function ServiceForm({
         </label>
       </CardContent>
       <CardActions>
-        <Button type="submit" variant="contained" color="success" fullWidth onClick={handleSubmit}>
+        <Button type="submit" variant="contained" fullWidth sx={{backgroundColor: "success.dark"}} onClick={handleSubmit}>
           Создать
         </Button>
       </CardActions>

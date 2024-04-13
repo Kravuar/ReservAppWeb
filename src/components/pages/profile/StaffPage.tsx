@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Box, Card, CardContent, Skeleton } from "@mui/material";
+import { Box, Card, CardContent, Skeleton, Typography } from "@mui/material";
 import { useParams } from "react-router-dom";
 import ErrorPage from "../../util/ErrorPage";
 import { useAlert } from "../../util/Alert";
@@ -7,23 +7,28 @@ import { Staff } from "../../../domain/Staff";
 import StaffCard from "../../parts/StaffCard";
 import {
   getActiveScheduleOfStaffAndService as activeScheduleOfStaffAndService,
+  createSchedule,
   servicesByBusiness,
   staffById,
 } from "../../../services/api";
-import { Schedule } from "../../../domain/Schedule";
+import { Schedule, ScheduleFormData } from "../../../domain/Schedule";
 import { Service, ServiceDetailed } from "../../../domain/Service";
 import { Page } from "../../../domain/Page";
+import CardTabs from "../../parts/CardTabs";
+import SimpleServiceCard from "../../parts/SimpleServiceCard";
+import ManagedStaffScheduleTab from "../../parts/ManagedStaffScheduleTab";
 
 export default function StaffPage() {
   const id = Number(useParams<{ id: string }>().id);
   const { withAlert, withErrorAlert } = useAlert();
-  const [staff, setStaff] = useState<Staff | null>(null);
-  const [schedule, setSchedule] = useState<Schedule[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [staff, setStaff] = useState<Staff>();
+  const [service, setService] = useState<Service>();
+  const [schedules, setSchedule] = useState<Schedule[]>([]);
+  const [error, setError] = useState<string>();
 
   useEffect(() => {
     if (Number.isNaN(id)) {
-      setError("Номер услуги обязателен");
+      setError("Номер сотрудника обязателен");
       return;
     }
     staffById(id)
@@ -31,17 +36,31 @@ export default function StaffPage() {
       .catch((error) => setError(error));
   }, [id]);
 
-  async function scheduleSupplier(): Promise<Schedule[]> {
-    if (staff)
-      return withErrorAlert(() =>
-        activeScheduleOfStaffAndService(staff.id, serviceId)
-      );
-    return [];
+  async function scheduleSupplier(serviceId: number): Promise<Schedule[]> {
+    return withErrorAlert(() =>
+      activeScheduleOfStaffAndService(staff!.id, serviceId)
+    );
   }
 
-  async function serviceSupplier(page: number): Promise<ServiceDetailed[]> {
+  async function serviceSupplier(page: number): Promise<Page<ServiceDetailed>> {
     return withErrorAlert(() =>
-      servicesByBusiness(staff.business.id, page, 10)
+      servicesByBusiness(staff!.business.id, page, 10)
+    );
+  }
+
+  async function handleServiceSelect(service: ServiceDetailed) {
+    setService(service);
+    scheduleSupplier(service.id)
+      .then(setSchedule)
+      .catch(() => {});
+  }
+
+  async function handleScheduleCreation(formData: ScheduleFormData) {
+    return withAlert(
+      () =>
+        withErrorAlert(() => createSchedule(service!.id, staff!.id, formData)),
+      "Расписание создано",
+      "success"
     );
   }
 
@@ -49,7 +68,22 @@ export default function StaffPage() {
     return (
       <Box display="flex" flexDirection="column" justifyContent="space-between">
         <StaffCard staff={staff} />
-        <Box sx={{ display: "flex", flexDirection: "column" }}></Box>
+        <Box sx={{ display: "flex", flexDirection: "column" }}>
+          <CardTabs
+            pageSupplier={serviceSupplier}
+            CardComponent={(props) => (
+              <SimpleServiceCard service={props.item} />
+            )}
+            selectHandler={handleServiceSelect}
+            horizontal
+          />
+          <Box mt={3}>
+            <ManagedStaffScheduleTab
+              schedules={schedules}
+              scheduleCreationHandler={handleScheduleCreation}
+            />
+          </Box>
+        </Box>
       </Box>
     );
   } else if (error) return <ErrorPage message={error} />;
@@ -67,7 +101,12 @@ function SkeletonBody() {
         <CardContent sx={{ flex: "1 0 auto", position: "relative" }}>
           <Box display="flex" flexDirection="row" alignItems="center">
             <Skeleton variant="text" width="60%" />
-            <Skeleton variant="rectangular" width={100} height={30} />
+            <Skeleton
+              variant="rectangular"
+              width={100}
+              height={30}
+              sx={{ ms: 5 }}
+            />
           </Box>
           <Box
             sx={{
@@ -82,35 +121,5 @@ function SkeletonBody() {
         </CardContent>
       </Box>
     </Card>
-  );
-}
-
-function ServiceTabs({
-  serviceSupplier,
-  onSelect,
-}: {
-  serviceSupplier: (page: number) => Page<ServiceDetailed>;
-  onSelect: (serviceId: number) => void;
-}) {
-  
-
-  return (
-    <Tabs
-      value={staff.id}
-      onChange={(_, newStaffId) => handleStaffChange(newStaffId)}
-      variant="scrollable"
-      scrollButtons="auto"
-      aria-label="staff tabs"
-      orientation="vertical"
-    >
-      {staffList?.content.map((staff) => (
-        <Tab
-          label={staff.name}
-          value={staff.id}
-          key={staff.id}
-          icon={<Avatar src={staff.picture} />}
-        />
-      ))}
-    </Tabs>
   );
 }

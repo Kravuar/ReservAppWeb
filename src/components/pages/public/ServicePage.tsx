@@ -19,8 +19,8 @@ import StaffScheduleTab from "../../parts/StaffScheduleTab";
 export default function ServicePage() {
   const id = Number(useParams<{ id: string }>().id);
   const { withAlert, withErrorAlert } = useAlert();
-  const [service, setService] = useState<ServiceDetailed | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [service, setService] = useState<ServiceDetailed>();
+  const [error, setError] = useState<string>();
   const [tab, setTab] = useState(0);
 
   useEffect(() => {

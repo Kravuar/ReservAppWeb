@@ -4,7 +4,7 @@ import { UserClaims, CustomUserClaims } from "@okta/okta-auth-js";
 
 export default function useAuthUser() {
   const { oktaAuth, authState } = useOktaAuth();
-  const [userInfo, setUserInfo] = useState<UserClaims<CustomUserClaims> | null>(null);
+  const [userInfo, setUserInfo] = useState<UserClaims<CustomUserClaims>>();
 
   useEffect(() => {
     const getUser = async () => {

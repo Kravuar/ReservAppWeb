@@ -32,6 +32,22 @@ export class ScheduleExceptionDay {
   }
 }
 
+export class ScheduleFormData {
+  constructor(
+    public start: LocalDate,
+    public end: LocalDate,
+    public patterns: SchedulePatternFormData[]
+  ) {}
+}
+
+export class SchedulePatternFormData {
+  constructor(
+    public repeatDays: number,
+    public pauseDays: number,
+    public reservationSlots: ReservationSlot[]
+  ) {}
+}
+
 export class Schedule {
   start: LocalDate;
   end: LocalDate;

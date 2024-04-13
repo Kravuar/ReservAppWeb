@@ -3,7 +3,12 @@ import axios from "axios";
 import { BusinessDetailed, BusinessFormData } from "../domain/Business";
 import { Page } from "../domain/Page";
 import { Service, ServiceDetailed, ServiceFormData } from "../domain/Service";
-import { Staff, StaffBusiness, StaffInvitation, StaffInvitationDetailed } from "../domain/Staff";
+import {
+  Staff,
+  StaffBusiness,
+  StaffInvitation,
+  StaffInvitationDetailed,
+} from "../domain/Staff";
 import {
   Reservation,
   ReservationDetailed,
@@ -12,6 +17,8 @@ import {
   ReservationSlot,
   ReservationSlotDetailed,
   Schedule,
+  ScheduleFormData,
+  SchedulePattern,
   ScheduleStaff,
 } from "../domain/Schedule";
 import { LocalDate, LocalDateTime } from "@js-joda/core";
@@ -63,11 +70,7 @@ async function megaDetailedReservationsDTO(
   );
   const reservationData = await Promise.all(
     dates.map(async (date) =>
-      megaDetailedReservations(
-        reservations[date],
-        staffs,
-        services
-      )
+      megaDetailedReservations(reservations[date], staffs, services)
     )
   );
 
@@ -103,11 +106,7 @@ async function megaDetailedReservationsFromClientDTO(
   );
   const reservationData = await Promise.all(
     dates.map(async (date) =>
-      megaDetailedReservationsFromClient(
-        reservations[date],
-        staffs,
-        services
-      )
+      megaDetailedReservationsFromClient(reservations[date], staffs, services)
     )
   );
 
@@ -159,22 +158,26 @@ async function scheduleToDetailed(
   );
 }
 
-async function detailedInvitations(invitations: Page<StaffInvitation>): Promise<Page<StaffInvitationDetailed>> {
+async function detailedInvitations(
+  invitations: Page<StaffInvitation>
+): Promise<Page<StaffInvitationDetailed>> {
   const businesses = await detailedBusinesses(
-    invitations.content
-      .map((invitation) => invitation.business.id)
+    invitations.content.map((invitation) => invitation.business.id)
   );
 
   return {
-    content: invitations.content.map(invitation => new StaffInvitationDetailed(
-      invitation.id,
-      invitation.sub,
-      businesses.get(invitation.business.id)!,
-      invitation.createdAt,
-      invitation.status
-    )),
-    totalPages: invitations.totalPages
-  }
+    content: invitations.content.map(
+      (invitation) =>
+        new StaffInvitationDetailed(
+          invitation.id,
+          invitation.sub,
+          businesses.get(invitation.business.id)!,
+          invitation.createdAt,
+          invitation.status
+        )
+    ),
+    totalPages: invitations.totalPages,
+  };
 }
 
 export async function detailedBusinessById(
@@ -433,11 +436,37 @@ export async function scheduleByService(
   return bullshit;
 }
 
-export async function getActiveScheduleOfStaffAndService(staffId: number, serviceId: number) {
+export async function getActiveScheduleOfStaffAndService(
+  staffId: number,
+  serviceId: number
+) {
   const response = await axios.get<Schedule[]>(
     `schedule/api-v1/retrieval/by-staff-and-service/${staffId}/${serviceId}`
   );
-  return response.data;
+
+  // Axios sucks
+  return response.data.map(
+    (schedule) =>
+      new Schedule(
+        schedule.start,
+        schedule.end,
+        schedule.id,
+        schedule.staff,
+        schedule.service,
+        schedule.patterns.map(pattern => new SchedulePattern(
+          pattern.id,
+          pattern.repeatDays,
+          pattern.pauseDays,
+          pattern.reservationSlots.map(slot => new ReservationSlot(
+            slot.start,
+            slot.end,
+            slot.cost,
+            slot.maxReservations
+          ))
+        )),
+        schedule.createdAt
+      )
+  );
 }
 
 export async function reserveSlot(
@@ -488,6 +517,18 @@ export async function createService(
   return detailedService(response.data);
 }
 
+export async function createSchedule(
+  serviceId: number,
+  staffId: number,
+  formData: ScheduleFormData
+): Promise<Schedule> {
+  const response = await axios.post<Schedule>(
+    `schedule/api-v1/management/create/${serviceId}/${staffId}`,
+    formData
+  );
+  return response.data;
+}
+
 export async function inviteStaff(
   subject: string,
   businessId: number
@@ -514,24 +555,35 @@ export async function acceptInvitation(invitationId: number): Promise<void> {
 
 export async function declineInvitation(invitationId: number): Promise<void> {
   const response = await axios.post<void>(
-    `staff/api-v1/management/declline-invitation/${invitationId}`
+    `staff/api-v1/management/decline-invitation/${invitationId}`
   );
   return response.data;
 }
 
-export async function getMyInvitations(page: number, pageSize: number): Promise<Page<StaffInvitationDetailed>> {
+export async function getMyInvitations(
+  page: number,
+  pageSize: number
+): Promise<Page<StaffInvitationDetailed>> {
   const response = await axios.get<Page<StaffInvitation>>(
-    `staff/api-v1/retrieval//invitations-by-sub/${paginationAdjustment(page)}/${pageSize}`
+    `staff/api-v1/retrieval//invitations-by-sub/${paginationAdjustment(
+      page
+    )}/${pageSize}`
   );
 
   return detailedInvitations(response.data);
 }
 
-export async function getInvitationsOfBusiness(businessId: number, page: number, pageSize: number): Promise<Page<StaffInvitationDetailed>> {
+export async function getInvitationsOfBusiness(
+  businessId: number,
+  page: number,
+  pageSize: number
+): Promise<Page<StaffInvitationDetailed>> {
   const response = await axios.get<Page<StaffInvitation>>(
-    `staff/api-v1/retrieval//invitations-by-business/${businessId}/${paginationAdjustment(page)}/${pageSize}`
+    `staff/api-v1/retrieval//invitations-by-business/${businessId}/${paginationAdjustment(
+      page
+    )}/${pageSize}`
   );
-  
+
   return detailedInvitations(response.data);
 }
 

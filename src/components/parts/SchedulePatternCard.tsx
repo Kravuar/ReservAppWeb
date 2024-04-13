@@ -5,13 +5,18 @@ import {
   Box,
   Button,
   Collapse,
-  Grid,
 } from "@mui/material";
 import { useState } from "react";
-import { SchedulePattern } from "../../domain/Schedule";
-import SimpleReservationSlotCard from "./SimpleReservationSlotCard";
+import { ReservationSlot } from "../../domain/Schedule";
+import ReservationSlotsBody from "./ReservationSlotsBody";
 
-export default function SchedulePatternCard({ pattern }: { pattern: SchedulePattern }) {
+type Pattern = {
+  repeatDays: number,
+  pauseDays: number,
+  reservationSlots: ReservationSlot[]  
+}
+
+export default function SchedulePatternCard({ pattern }: { pattern: Pattern }) {
   const [slotsOpen, setSlotsOpen] = useState(false);
 
   return (
@@ -50,13 +55,7 @@ export default function SchedulePatternCard({ pattern }: { pattern: SchedulePatt
           </Button>
         </Box>
         <Collapse in={slotsOpen}>
-          <Grid container spacing={2}>
-            {pattern.reservationSlots.map((slot, slotIndex) => (
-              <Grid item xs={12} sm={6} md={4} key={slotIndex}>
-                <SimpleReservationSlotCard reservationSlot={slot} />
-              </Grid>
-            ))}
-          </Grid>
+          <ReservationSlotsBody slots={pattern.reservationSlots} />
         </Collapse>
       </CardContent>
     </Card>

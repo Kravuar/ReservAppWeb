@@ -98,7 +98,7 @@ export default function BusinessForm({
         </label>
       </CardContent>
       <CardActions>
-        <Button type="submit" variant="contained" color="success" fullWidth>
+        <Button type="submit" variant="contained" fullWidth sx={{backgroundColor: "success.dark"}}>
           Создать
         </Button>
       </CardActions>

@@ -35,8 +35,8 @@ export default function StaffScheduleTab({
   staffSupplier: StaffSupplier;
   onReserve: ReserveAction;
 }) {
-  const [currentStaff, setCurrentStaff] = useState<Staff | null>(null);
-  const [staffList, setStaffList] = useState<Page<Staff> | null>(null);
+  const [currentStaff, setCurrentStaff] = useState<Staff>();
+  const [staffList, setStaffList] = useState<Page<Staff>>();
   const [staffPage, setStaffPage] = useState(1);
   const [selectedDate, setSelectedDate] = useState<LocalDate>(LocalDate.now());
   const [schedule, setSchedule] = useState<
@@ -138,7 +138,7 @@ export default function StaffScheduleTab({
       </Box>
       <Box>
         {currentStaff && (
-          <ScheduleBody key={currentStaff.id} schedule={schedule} onReserve={onReserve}/>
+          <ScheduleBody key={currentStaff.id} schedule={schedule} onReserve={onReserve} showStaff={false}/>
         )}
       </Box>
     </Box>

@@ -1,7 +1,7 @@
 import { LocalDate, LocalTime } from "@js-joda/core";
 import { ReservationSlotDetailed } from "../../domain/Schedule";
-import { Box, Typography, Grid, Card, CardContent } from "@mui/material";
-import ReservationSlotCard from "./ReservationSlotCard";
+import { Box, Typography, Card, CardContent } from "@mui/material";
+import ManagedReservationSlotsBody from "./ManagedReservationSlotsBody";
 
 export type ReserveAction = (
   staffId: number,
@@ -11,14 +11,17 @@ export type ReserveAction = (
 
 export default function ScheduleBody({
   schedule,
-  showStaff,
   onReserve,
+  showStaff,
 }: {
   schedule: Map<LocalDate, ReservationSlotDetailed[]>;
   onReserve: ReserveAction;
-  showStaff?: boolean;
+  showStaff: boolean;
 }) {
-  async function reserveHandler(date: LocalDate, slot: ReservationSlotDetailed): Promise<void> {
+  async function reserveHandler(
+    date: LocalDate,
+    slot: ReservationSlotDetailed
+  ): Promise<void> {
     return onReserve(slot.staff.id, date, slot.start);
   }
 
@@ -45,17 +48,11 @@ export default function ScheduleBody({
               {date.dayOfMonth()}
             </Typography>
             {slots && (
-              <Grid container spacing={2}>
-                {slots.map((slot, slotIndex) => (
-                  <Grid item xs={12} sm={6} md={4} key={slotIndex}>
-                    <ReservationSlotCard
-                      onReserve={() => reserveHandler(date, slot)}
-                      reservationSlot={slot}
-                      showStaff={showStaff}
-                    />
-                  </Grid>
-                ))}
-              </Grid>
+              <ManagedReservationSlotsBody
+                slots={slots}
+                reserveHandler={(slot) => reserveHandler(date, slot)}
+                showStaff={showStaff}
+              />
             )}
           </CardContent>
         </Card>

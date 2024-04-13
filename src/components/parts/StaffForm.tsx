@@ -7,7 +7,7 @@ import {
   CardActions,
 } from "@mui/material";
 
-export default function ServiceForm({
+export default function StaffForm({
   onSubmit,
 }: {
   onSubmit: (subject: string) => Promise<void>;
@@ -37,8 +37,8 @@ export default function ServiceForm({
         />
       </CardContent>
       <CardActions>
-        <Button type="submit" variant="contained" color="success" fullWidth>
-          Создать
+        <Button type="submit" variant="contained" fullWidth sx={{backgroundColor: "success.dark"}}>
+          Добавить
         </Button>
       </CardActions>
     </Card>

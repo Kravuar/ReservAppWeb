@@ -31,13 +31,13 @@ export default function CardList<T>({
         />
       </Box>
       <Grid container rowSpacing={5} my={3}>
-        {page?.content?.map((item, idx) => (
+        {page?.content.map((item, idx) => (
           <Grid item xs={12} key={idx}>
             <CardComponent item={item}/>
           </Grid>
         ))}
       </Grid>
-      {page?.content?.length !== undefined && page?.content?.length > 3 && (
+      {page?.content.length !== undefined && page?.content.length > 3 && (
         <Box sx={{ display: "flex", justifyContent: "center" }}>
           <Pagination
             count={page?.totalPages || 1}
