@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Box, Card, CardContent, Skeleton, Typography } from "@mui/material";
+import { Box, Card, CardContent, Skeleton } from "@mui/material";
 import { useParams } from "react-router-dom";
 import ErrorPage from "../../util/ErrorPage";
 import { useAlert } from "../../util/Alert";
