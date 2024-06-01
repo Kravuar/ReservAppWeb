@@ -21,7 +21,7 @@ import {
   SchedulePattern,
   ScheduleStaff,
 } from "../domain/Schedule";
-import { LocalDate, LocalDateTime } from "@js-joda/core";
+import { LocalDate, LocalDateTime, LocalTime } from "@js-joda/core";
 
 function paginationAdjustment(page: number): number {
   return page - 1;
@@ -137,6 +137,11 @@ async function scheduleToDetailed(
             date,
             reservations
           );
+          // stupid, but i`ll just do gql right away
+          sameDayReservations?.forEach(reservation => {
+            reservation.start = LocalTime.parse(reservation.start.toString());
+            reservation.end = LocalTime.parse(reservation.end.toString());
+          })
           const reservationsCount = sameDayReservations
             ? sameDayReservations.filter(
                 (reservation) =>
