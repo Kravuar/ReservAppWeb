@@ -1,69 +1,163 @@
-import { useEffect, useState } from "react";
-import { ServiceDetailed } from "../../../domain/Service";
+import { useState } from "react";
+import { Service } from "../../../domain/Service";
 import { Box, Skeleton, Tab, Tabs } from "@mui/material";
 import { useParams } from "react-router-dom";
 import ErrorPage from "../../util/ErrorPage";
-import {
-  reserveSlot,
-  scheduleByService,
-  scheduleByServiceAndStaff,
-  detailedServiceById,
-  staffByBusinessId,
-} from "../../../services/api";
 import { LocalDate, LocalDateTime, LocalTime } from "@js-joda/core";
 import { useAlert } from "../../util/Alert";
 import ServiceCard from "../../parts/ServiceCard";
 import ServiceScheduleTab from "../../parts/ServiceScheduleTab";
 import StaffScheduleTab from "../../parts/StaffScheduleTab";
+import gql from "graphql-tag";
+import { useApolloClient, useQuery } from "@apollo/client";
+import { ReservationSlot } from "../../../domain/Schedule";
+import { Staff } from "../../../domain/Staff";
+import { Page } from "../../../domain/Page";
+import { groupBy } from "../../../services/utils";
+
+const serviceQuery = gql`
+  {
+    service(serviceId: $serviceId) {
+      id
+      name
+      business {
+        name
+        ownerSub
+      }
+      active
+      description
+    }
+  }
+`;
+
+const serviceScheduleQuery = gql`
+  {
+    service(serviceId: $serviceId) {
+      schedule(from: $from, to: $to) {
+        date
+        start
+        end
+        cost
+        maxReservations
+        reservationsLeft
+        staff {
+          name
+        }
+      }
+    }
+  }
+`;
+
+const staffScheduleQuery = gql`
+  {
+    staff(staffId: $staffId) {
+      name
+      schedule(serviceId: $serviceId, from: $from, to: $to) {
+        date
+        start
+        end
+        cost
+        maxReservations
+        reservationsLeft
+      }
+    }
+  }
+`;
+
+const staffQuery = gql`
+  {
+    business(businessId: $businessId) {
+      staff(page: $page, pageSize: $pageSize) {
+        id
+        sub
+        name
+      }
+    }
+  }
+`;
+
+const reserveMutation = gql`
+  mutation {
+    reserveSlot(dateTime: $dateTime, staffId: $staffId, serviceId: $serviceId) {
+      id
+    }
+  }
+`;
 
 export default function ServicePage() {
   const id = Number(useParams<{ id: string }>().id);
   const { withAlert, withErrorAlert } = useAlert();
-  const [service, setService] = useState<ServiceDetailed>();
-  const [error, setError] = useState<string>();
+  const client = useApolloClient();
+  const {loading: loadingService, error: serviceError, data: service} = useQuery<Service>(serviceQuery, { variables: { id: id } });
   const [tab, setTab] = useState(0);
 
-  useEffect(() => {
-    if (Number.isNaN(id)) {
-      setError("Номер услуги обязателен");
-      return;
+  if (service) {
+    const staffScheduleSupplier = async (staffId: number, from: LocalDate, to: LocalDate) => {
+      return withErrorAlert(() => client.query<Staff>({
+            query: staffScheduleQuery,
+            variables: {
+              serviceId: id,
+              staffId: staffId,
+              from: from,
+              to: to,
+            },
+          })
+          .then((response) => response.data)
+          .then((fetchedStaff) => {
+            fetchedStaff.schedule!.forEach((slot) => (slot.staff = fetchedStaff));
+            return groupBy(fetchedStaff.schedule!, slot => slot.date!);
+          })
+      );
+    };
+  
+    const serviceScheduleSupplier = async (from: LocalDate, to: LocalDate) => {
+      return withErrorAlert(() => client.query<{schedule: ReservationSlot[]}>({
+            query: serviceScheduleQuery,
+            variables: {
+              serviceId: id,
+              from: from,
+              to: to,
+            },
+          })
+          .then((response) => response.data)
+          .then((fetchedService) => {
+            fetchedService.schedule!.forEach((slot) => (slot.service = service));
+            return groupBy(fetchedService.schedule, slot => slot.date!);
+          })
+      );
     }
-    detailedServiceById(id)
-      .then(setService)
-      .catch((error) => setError(error));
-  }, [id]);
 
-  function staffScheduleSupplier(
-    staffId: number,
-    from: LocalDate,
-    to: LocalDate
-  ) {
-    return withErrorAlert(() =>
-      scheduleByServiceAndStaff(id, staffId, from, to)
-    );
-  }
+    const staffSupplier = async (page: number, pageSize: number) => {
+      return withErrorAlert(() => client.query<{staff: Page<Staff>}>({
+            query: staffQuery,
+            variables: {
+              businessId: service.business!.id,
+              page: page,
+              pageSize: pageSize
+            },
+          })
+          .then((response) => response.data)
+          .then((fetchedBusiness) => fetchedBusiness.staff)
+      );
+    }
 
-  function serviceScheduleSupplier(from: LocalDate, to: LocalDate) {
-    return withErrorAlert(() => scheduleByService(id, from, to));
-  }
+    const reserveHandler = async (staffId: number, date: LocalDate, start: LocalTime) => {
+      return withErrorAlert(() =>
+        withAlert(
+          () => client.mutate({
+            mutation: reserveMutation,
+            variables: {
+              dateTime: LocalDateTime.of(date, start),
+              staffId: staffId,
+              serviceId: service.id
+            }
+          }),
+          "Запись зарезирвирована",
+          "success"
+        ).then(() => {})
+      );
+    }
 
-  function staffSupplier(page: number, pageSize: number) {
-    return withErrorAlert(() =>
-      staffByBusinessId(service!.business.id, page, pageSize)
-    );
-  }
-
-  function reserveHandler(staffId: number, date: LocalDate, start: LocalTime) {
-    return withErrorAlert(() =>
-      withAlert(
-        () => reserveSlot(staffId, service!.id, LocalDateTime.of(date, start)),
-        "Запись зарезирвирована",
-        "success"
-      )
-    );
-  }
-
-  if (service)
     return (
       <Box display="flex" flexDirection="column" justifyContent="space-between">
         <ServiceCard service={service} />
@@ -98,8 +192,8 @@ export default function ServicePage() {
         </Box>
       </Box>
     );
-  else if (error) return <ErrorPage message={error} />;
-  else return <SkeletonBody />;
+  } else if (loadingService) return <SkeletonBody />;
+    else return <ErrorPage message={serviceError!.message} />;
 }
 
 function SkeletonBody() {

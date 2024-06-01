@@ -1,6 +1,6 @@
 import { Box, Button, TextField } from "@mui/material";
 import { Page } from "../../domain/Page";
-import { ServiceDetailed } from "../../domain/Service";
+import { Service } from "../../domain/Service";
 import { useState } from "react";
 import SearchIcon from "@mui/icons-material/Search";
 import CardList from "./CardList";
@@ -12,12 +12,12 @@ export default function ServiceList({
   searchPageSupplier: (
     name: string,
     page: number
-  ) => Promise<Page<ServiceDetailed>>;
-  CardComponent: React.ComponentType<{ item: ServiceDetailed }>;
+  ) => Promise<Page<Service>>;
+  CardComponent: React.ComponentType<{ item: Service }>;
 }) {
   const [name, setName] = useState("");
   const [pageSupplier, setPageSupplier] = useState<
-    (page: number) => Promise<Page<ServiceDetailed>>
+    (page: number) => Promise<Page<Service>>
   >(() => (page: number) => searchPageSupplier("", page));
 
   function handleSearchClick() {

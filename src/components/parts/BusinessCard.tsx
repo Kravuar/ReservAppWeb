@@ -8,9 +8,9 @@ import {
   Typography,
 } from "@mui/material";
 import { Link } from "react-router-dom";
-import { BusinessDetailed } from "../../domain/Business";
+import { Business } from "../../domain/Business";
 
-export default function BusinessCard({ business }: { business: BusinessDetailed }) {
+export default function BusinessCard({ business }: { business: Business }) {
 
   return (
     <Card sx={{ display: "flex", marginBottom: 2, boxShadow: 3 }}>

@@ -1,53 +1,78 @@
-import { useEffect, useState } from "react";
 import BusinessBody from "../../parts/BusinessBody";
-import { BusinessDetailed } from "../../../domain/Business";
+import { Business } from "../../../domain/Business";
 import { Box, Skeleton } from "@mui/material";
 import { useParams } from "react-router-dom";
 import ErrorPage from "../../util/ErrorPage";
-import { detailedBusinessById, servicesByBusiness } from "../../../services/api";
 import { Page } from "../../../domain/Page";
-import { ServiceDetailed } from "../../../domain/Service";
+import { Service } from "../../../domain/Service";
 import { useAlert } from "../../util/Alert";
+import gql from "graphql-tag";
+import { useApolloClient, useQuery } from "@apollo/client";
+
+const businessQuery = gql`
+  {
+    business(businessId: $businessId) {
+      id
+      name
+      ownerSub
+      active
+      description
+    }
+  }
+`;
+
+const servicesQuery = gql`
+  {
+    business(businessId: $businessId) {
+      services(page: $page, pageSize: 10) {
+        id
+        name
+        description
+        active
+      }
+    }
+  }
+`;
 
 export default function BusinessPage() {
   const id = Number(useParams<{ id: string }>().id);
   const { withErrorAlert } = useAlert();
-  const [business, setBusiness] = useState<BusinessDetailed>();
-  const [error, setError] = useState<string>();
+  const client = useApolloClient();
+  const {loading, error, data: business} = useQuery<Business>(businessQuery, {variables: {id: id}});
 
-  useEffect(() => {
-    if (Number.isNaN(id)) {
-      setError("Номер бизнеса обязателен");
-      return;
+  if (business) {
+    const fetchServicesOfBusiness = async (page: number): Promise<Page<Service>> => {
+      return withErrorAlert(() =>
+        client.query<Page<Service>>({
+            query: servicesQuery,
+            variables: {
+              businessId: id,
+              page: page
+            },
+          })
+          .then((response) => response.data)
+          .then(page => {
+            page.content.forEach(service => service.business = business);
+            return page;
+          })
+      );
     }
-    detailedBusinessById(id)
-      .then(setBusiness)
-      .catch((error) => setError(error));
-  }, [id]);
 
-  async function fetchData(page: number): Promise<Page<ServiceDetailed>> {
-      return withErrorAlert(() => servicesByBusiness(id, page, 10));
-  }
+    const fetchServicesByName = async (name: string, page: number): Promise<Page<Service>> => {
+      // TODO: adjust, when server implements search
+      return await fetchServicesOfBusiness(page);
+    }
 
-  async function fetchDataWithName(
-    name: string,
-    page: number
-  ): Promise<Page<ServiceDetailed>> {
-    // TODO: adjust, when server implements search
-    return await fetchData(page);
-  }
-
-  if (business)
     return (
       <BusinessBody
         business={business}
         searchServicesPageSupplier={(name, page) =>
-          fetchDataWithName(name, page)
+          fetchServicesByName(name, page)
         }
       />
     );
-  else if (error) return <ErrorPage message={error} />;
-  else return <SkeletonBody />;
+  } else if (loading) return <SkeletonBody />; 
+    else return <ErrorPage message={error!.message} />;
 }
 
 function SkeletonBody() {

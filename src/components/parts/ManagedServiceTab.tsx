@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Box, Button, Collapse } from "@mui/material";
 import ServiceList from "./ServiceList";
-import { ServiceDetailed } from "../../domain/Service";
+import { Service } from "../../domain/Service";
 import { Page } from "../../domain/Page";
 import ServiceForm, { ServiceFormData } from "./ServiceForm";
 import ServiceCard from "./ServiceCard";
@@ -10,7 +10,7 @@ export default function ManagedServicesTab({
   pageSupplier,
   serviceCreationHandler,
 }: {
-  pageSupplier: (name: string, page: number) => Promise<Page<ServiceDetailed>>;
+  pageSupplier: (name: string, page: number) => Promise<Page<Service>>;
   serviceCreationHandler: (formData: ServiceFormData) => Promise<void>;
 }) {
   const [createOpen, setCreateOpen] = useState(false);

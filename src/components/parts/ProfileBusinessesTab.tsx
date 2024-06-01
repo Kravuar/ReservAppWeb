@@ -1,10 +1,10 @@
 import { Page } from "../../domain/Page";
-import { BusinessDetailed, BusinessFormData } from "../../domain/Business";
+import { Business, BusinessFormData } from "../../domain/Business";
 import { useState } from "react";
 import { Box, Button, Collapse } from "@mui/material";
 import BusinessForm from "./BusinessForm";
 import ManagedBusinessCard from "./ManagedBusinessCard";
-import { ServiceDetailed, ServiceFormData } from "../../domain/Service";
+import { Service, ServiceFormData } from "../../domain/Service";
 import { Staff, StaffInvitationDetailed } from "../../domain/Staff";
 import CardList from "./CardList";
 
@@ -19,15 +19,15 @@ export default function ProfileBusinessesTab({
   staffRemovalHandler,
   invitationDeclineHandler
 }: {
-  pageSupplier: (page: number) => Promise<Page<BusinessDetailed>>;
+  pageSupplier: (page: number) => Promise<Page<Business>>;
   businessCreationHandler: (
     business: BusinessFormData
-  ) => Promise<BusinessDetailed>;
+  ) => Promise<Business>;
   servicePageSupplier: (
     businessId: number,
     name: string,
     page: number
-  ) => Promise<Page<ServiceDetailed>>;
+  ) => Promise<Page<Service>>;
   staffPageSupplier: (businessId: number, page: number) => Promise<Page<Staff>>;
   invitationPageSupplier: (businessId: number, page: number) => Promise<Page<StaffInvitationDetailed>>;
   serviceCreationHandler: (formData: ServiceFormData) => Promise<void>;

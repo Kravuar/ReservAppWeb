@@ -7,12 +7,12 @@ import {
   Typography,
 } from "@mui/material";
 import { Link } from "react-router-dom";
-import { ServiceDetailed } from "../../domain/Service";
+import { Service } from "../../domain/Service";
 
 export default function SimpleServiceCard({
   service,
 }: {
-  service: ServiceDetailed;
+  service: Service;
 }) {
   return (
     <Card sx={{ display: "flex", marginBottom: 2, boxShadow: 3 }}>

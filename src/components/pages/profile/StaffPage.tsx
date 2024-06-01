@@ -12,7 +12,7 @@ import {
   staffById,
 } from "../../../services/api";
 import { Schedule, ScheduleFormData } from "../../../domain/Schedule";
-import { Service, ServiceDetailed } from "../../../domain/Service";
+import { Service, Service } from "../../../domain/Service";
 import { Page } from "../../../domain/Page";
 import CardTabs from "../../parts/CardTabs";
 import SimpleServiceCard from "../../parts/SimpleServiceCard";
@@ -42,13 +42,13 @@ export default function StaffPage() {
     );
   }
 
-  async function serviceSupplier(page: number): Promise<Page<ServiceDetailed>> {
+  async function serviceSupplier(page: number): Promise<Page<Service>> {
     return withErrorAlert(() =>
       servicesByBusiness(staff!.business.id, page, 10)
     );
   }
 
-  async function handleServiceSelect(service: ServiceDetailed) {
+  async function handleServiceSelect(service: Service) {
     setService(service);
     scheduleSupplier(service.id)
       .then(setSchedule)

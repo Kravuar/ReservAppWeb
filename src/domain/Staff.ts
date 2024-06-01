@@ -1,17 +1,23 @@
 import { LocalDateTime } from "@js-joda/core";
-import { BusinessDetailed } from "./Business";
+import { Business } from "./Business";
+import { faker } from "@faker-js/faker";
+import { ReservationSlot } from "./Schedule";
 
 export class Staff {
+  picture?: string;
+  rating?: number;
+
   constructor(
-    public id: number,
-    public sub: string,
-    public name: string,
-    public description: string,
-    public picture: string,
-    public rating: number,
-    public business: StaffBusiness,
-    public active: boolean
-  ) {}
+    public id?: number,
+    public sub?: string,
+    public name?: string,
+    public description?: string,
+    public business?: Business,
+    public schedule?: ReservationSlot[]
+  ) {
+    this.picture = faker.image.avatar();
+    this.rating = faker.number.float({ fractionDigits: 2, min: 1, max: 5 })
+  }
 }
 
 export enum InvitationStatus {
@@ -21,47 +27,16 @@ export enum InvitationStatus {
 }
 
 export class StaffInvitation {
-  id: number;
-  sub: string;
-  business: StaffBusiness;
-  createdAt: LocalDateTime;
-  status: InvitationStatus;
+  createdAt?: LocalDateTime;
 
   constructor(
-    id: number,
-    sub: string,
-    business: StaffBusiness,
-    createdAt: string | LocalDateTime,
-    status: InvitationStatus
+    public id?: number,
+    public sub?: string,
+    public status?: InvitationStatus,
+    public business?: Business,
+    createdAt?: string
   ) {
-    this.id = id;
-    this.sub = sub;
-    this.business = business;
-    this.createdAt =
-      createdAt instanceof LocalDateTime
-        ? createdAt
-        : LocalDateTime.parse(createdAt);
-    this.status = status;
+    if (createdAt)
+      this.createdAt = LocalDateTime.parse(createdAt);
   }
-}
-
-export class StaffInvitationDetailed {
-  createdAt: LocalDateTime;
-
-  constructor(
-    public id: number,
-    public sub: string,
-    public business: BusinessDetailed,
-    createdAt: string | LocalDateTime,
-    public status: InvitationStatus
-  ) {
-    this.createdAt = 
-    createdAt instanceof LocalDateTime
-        ? createdAt
-        : LocalDateTime.parse(createdAt);
-  }
-}
-
-export class StaffBusiness {
-  constructor(public id: number, public ownerSub: string) {}
 }

@@ -1,14 +1,14 @@
 import { LocalDate } from "@js-joda/core";
-import { ReservationSlotDetailed } from "../../domain/Schedule";
 import { useState } from "react";
 import { Box } from "@mui/material";
 import WeekSelector from "./WeekSelector";
 import ScheduleBody, { ReserveAction } from "./ScheduleBody";
+import { ReservationSlot } from "../../domain/Schedule";
 
 export type ScheduleSupplier = (
   from: LocalDate,
   to: LocalDate
-) => Promise<Map<LocalDate, ReservationSlotDetailed[]>>;
+) => Promise<Map<LocalDate, ReservationSlot[]>>;
 
 export default function ServiceScheduleTab({
   scheduleSupplier,
@@ -19,7 +19,7 @@ export default function ServiceScheduleTab({
 }) {
   const [selectedDate, setSelectedDate] = useState<LocalDate>(LocalDate.now());
   const [schedule, setSchedule] = useState<
-    Map<LocalDate, ReservationSlotDetailed[]>
+    Map<LocalDate, ReservationSlot[]>
   >(new Map());
 
   function handleWeekChange(

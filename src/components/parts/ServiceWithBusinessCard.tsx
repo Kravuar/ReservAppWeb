@@ -10,9 +10,9 @@ import {
   Avatar,
 } from "@mui/material";
 import { Link } from "react-router-dom";
-import { ServiceDetailed } from "../../domain/Service";
+import { Service } from "../../domain/Service";
 
-export default function ServiceWithBusinessCard({ service }: { service: ServiceDetailed }) {
+export default function ServiceWithBusinessCard({ service }: { service: Service }) {
   return (
     <Card sx={{ display: "flex", boxShadow: 3 }}>
       {/* Service Picture on the left part */}

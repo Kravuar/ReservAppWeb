@@ -1,6 +1,6 @@
-import { BusinessDetailed } from "../../domain/Business";
+import { Business } from "../../domain/Business";
 import { Page } from "../../domain/Page";
-import { ServiceDetailed } from "../../domain/Service";
+import { Service } from "../../domain/Service";
 import BusinessCard from "./BusinessCard";
 import { Box, Card, CardContent, Typography } from "@mui/material";
 import ServiceList from "./ServiceList";
@@ -10,11 +10,11 @@ export default function BusinessBody({
   business,
   searchServicesPageSupplier,
 }: {
-  business: BusinessDetailed;
+  business: Business;
   searchServicesPageSupplier: (
     name: string,
     page: number
-  ) => Promise<Page<ServiceDetailed>>;
+  ) => Promise<Page<Service>>;
 }) {
   return (
     <Box display="flex" flexDirection="column" justifyContent="space-between">

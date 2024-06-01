@@ -20,13 +20,13 @@ import {
   acceptInvitation,
   declineInvitation,
 } from "../../../services/api";
-import { BusinessDetailed, BusinessFormData } from "../../../domain/Business";
+import { Business, BusinessFormData } from "../../../domain/Business";
 import { Page } from "../../../domain/Page";
 import { ReservationDetailed, ReservationFromClientDetailed } from "../../../domain/Schedule";
 import { LocalDate } from "@js-joda/core";
 import ProfileReservationsTab from "../../parts/ProfileReservationsTab";
 import { useAlert } from "../../util/Alert";
-import { ServiceDetailed, ServiceFormData } from "../../../domain/Service";
+import { Service, ServiceFormData } from "../../../domain/Service";
 import { Staff, StaffInvitationDetailed } from "../../../domain/Staff";
 import ReservationCard from "../../parts/ReservationCard";
 import ReservationFromClientCard from "../../parts/ReservationFromClientCard";
@@ -39,7 +39,7 @@ export default function ProfilePage() {
 
   async function fetchBusinesses(
     page: number
-  ): Promise<Page<BusinessDetailed>> {
+  ): Promise<Page<Business>> {
     return withErrorAlert(() => myDetailedBusinesses(page, 10));
   }
 
@@ -75,7 +75,7 @@ export default function ProfilePage() {
 
   async function businessCreationHandler(
     formData: BusinessFormData
-  ): Promise<BusinessDetailed> {
+  ): Promise<Business> {
     return withAlert(
       () => withErrorAlert(() => createBusiness(formData)),
       "Бизнес создан",
@@ -87,7 +87,7 @@ export default function ProfilePage() {
     businessId: number,
     name: string,
     page: number
-  ): Promise<Page<ServiceDetailed>> {
+  ): Promise<Page<Service>> {
     // TODO: adjust, when server implements search
     return withErrorAlert(() => servicesByBusiness(businessId, page, 10));
   }

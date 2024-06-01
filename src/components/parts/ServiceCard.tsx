@@ -8,9 +8,9 @@ import {
   Typography,
 } from "@mui/material";
 import { Link } from "react-router-dom";
-import { ServiceDetailed } from "../../domain/Service";
+import { Service } from "../../domain/Service";
 
-export default function ServiceCard({ service }: { service: ServiceDetailed }) {
+export default function ServiceCard({ service }: { service: Service }) {
   return (
     <Card sx={{ display: "flex", marginBottom: 2, boxShadow: 3 }}>
       {/* Service Picture on the left part */}

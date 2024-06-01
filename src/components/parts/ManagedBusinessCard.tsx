@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Box, Button, Collapse, Tab, Tabs } from "@mui/material";
 import BusinessCard from "./BusinessCard";
-import { BusinessDetailed } from "../../domain/Business";
+import { Business } from "../../domain/Business";
 import { Page } from "../../domain/Page";
-import { ServiceDetailed } from "../../domain/Service";
+import { Service } from "../../domain/Service";
 import { Staff, StaffInvitationDetailed } from "../../domain/Staff";
 import ManagedServicesTab from "./ManagedServiceTab";
 import ManagedStaffTab from "./ManagedStaffTab";
@@ -19,11 +19,11 @@ export default function ManagedBusinessCard({
   staffRemovalHandler,
   invitationDeclineHandler
 }: {
-  business: BusinessDetailed;
+  business: Business;
   servicePageSupplier: (
     name: string,
     page: number
-  ) => Promise<Page<ServiceDetailed>>;
+  ) => Promise<Page<Service>>;
   staffPageSupplier: (page: number) => Promise<Page<Staff>>;
   invitationPageSupplier: (page: number) => Promise<Page<StaffInvitationDetailed>>;
   serviceCreationHandler: (formData: ServiceFormData) => Promise<void>;
