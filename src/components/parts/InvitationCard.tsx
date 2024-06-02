@@ -6,7 +6,7 @@ import {
   CardActions,
   IconButton,
 } from "@mui/material";
-import { InvitationStatus, StaffInvitationDetailed } from "../../domain/Staff";
+import { InvitationStatus, StaffInvitation } from "../../domain/Staff";
 import BusinessCard from "./BusinessCard";
 import { useEffect, useState } from "react";
 import { Cancel, Check } from "@mui/icons-material";
@@ -30,9 +30,9 @@ export default function InvitationCard({
   acceptHandler,
   declineHandler,
 }: {
-  invitation: StaffInvitationDetailed;
-  acceptHandler?: (invitationId: number) => Promise<void>;
-  declineHandler: (invitationId: number) => Promise<void>;
+  invitation: StaffInvitation;
+  acceptHandler?: () => Promise<void>;
+  declineHandler: () => Promise<void>;
 }) {
   const [pending, setPending] = useState<boolean>(true);
 
@@ -43,13 +43,13 @@ export default function InvitationCard({
 
   const handleAccept = () => {
     if (acceptHandler)
-      acceptHandler(invitation.id)
+      acceptHandler()
         .then(() => setPending(false))
         .catch(() => {});
   };
 
   const handleDecline = () => {
-    declineHandler(invitation.id)
+    declineHandler()
       .then(() => setPending(false))
       .catch(() => {});
   };
@@ -64,13 +64,13 @@ export default function InvitationCard({
       }}
     >
       {/* Business Details */}
-      <BusinessCard business={invitation.business} />
+      <BusinessCard business={invitation.business!} />
       {/* Invitation Details */}
       <CardContent
         sx={{ display: "flex", flexDirection: "row", alignItems: "center" }}
       >
         <Chip
-          label={getReadableStatus(invitation.status)}
+          label={getReadableStatus(invitation.status!)}
           color={
             invitation.status === InvitationStatus.ACCEPTED
               ? "success"
@@ -87,8 +87,8 @@ export default function InvitationCard({
           component="div"
           marginTop={1}
         >
-          Создано: {invitation.createdAt.toLocalDate().toString()} в{" "}
-          {invitation.createdAt.toLocalTime().truncatedTo(ChronoUnit.SECONDS).toString()}
+          Создано: {invitation.createdAt!.toLocalDate().toString()} в{" "}
+          {invitation.createdAt!.toLocalTime().truncatedTo(ChronoUnit.SECONDS).toString()}
         </Typography>
       </CardContent>
       {pending && (

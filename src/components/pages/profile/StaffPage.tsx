@@ -1,76 +1,159 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Box, Card, CardContent, Skeleton } from "@mui/material";
 import { useParams } from "react-router-dom";
 import ErrorPage from "../../util/ErrorPage";
 import { useAlert } from "../../util/Alert";
 import { Staff } from "../../../domain/Staff";
 import StaffCard from "../../parts/StaffCard";
-import {
-  getActiveScheduleOfStaffAndService as activeScheduleOfStaffAndService,
-  createSchedule,
-  servicesByBusiness,
-  staffById,
-} from "../../../services/api";
 import { Schedule, ScheduleFormData } from "../../../domain/Schedule";
-import { Service, Service } from "../../../domain/Service";
+import { Service } from "../../../domain/Service";
 import { Page } from "../../../domain/Page";
 import CardTabs from "../../parts/CardTabs";
 import SimpleServiceCard from "../../parts/SimpleServiceCard";
 import ManagedStaffScheduleTab from "../../parts/ManagedStaffScheduleTab";
+import { gql, useApolloClient, useQuery } from "@apollo/client";
+
+const staffQuery = gql`
+  query Staff($staffId: ID!) {
+    staff(staffId: $staffId) {
+      id
+      sub
+      name
+      description
+      business {
+        id
+        name
+        description
+      }
+    }
+  }
+`;
+
+const scheduleQuery = gql`
+  query StaffSchedule($staffId: ID!, $serviceId: ID!) {
+    staff(staffId: $staffId) {
+      activeSchedules(serviceId: $serviceId) {
+        id
+        start
+        end
+        createdAt
+        patterns {
+          repeatDays
+          pauseDays
+          slots {
+            start
+            end
+            cost
+            maxReservations
+          }
+        }
+      }
+    }
+  }
+`;
+
+const servicesQuery = gql`
+  query ServicesOfBusinessTrimmed($businessId: ID!, $page: Int!) {
+    business(businessId: $businessId) {
+      services(page: $page, pageSize: 10) {
+        content {
+          id
+          name
+          description
+          active
+        }
+        totalPages
+      }
+    }
+  }
+`;
+
+const scheduleCreationMutation = gql`
+  query CreateSchedule($serviceId: ID!, $staffId: ID!, $input: ScheduleInput!) {
+    createSchedule(serviceId: $serviceId, staffId: $staffId, input: $input) {
+      id
+    }
+  }
+`;
 
 export default function StaffPage() {
   const id = Number(useParams<{ id: string }>().id);
   const { withAlert, withErrorAlert } = useAlert();
-  const [staff, setStaff] = useState<Staff>();
+  const {loading, error, data} = useQuery<{staff: Staff}>(staffQuery, {variables: {staffId: id}});
+  const staff = data?.staff;
+  const client = useApolloClient();
   const [service, setService] = useState<Service>();
   const [schedules, setSchedule] = useState<Schedule[]>([]);
-  const [error, setError] = useState<string>();
-
-  useEffect(() => {
-    if (Number.isNaN(id)) {
-      setError("Номер сотрудника обязателен");
-      return;
-    }
-    staffById(id)
-      .then(setStaff)
-      .catch((error) => setError(error));
-  }, [id]);
-
-  async function scheduleSupplier(serviceId: number): Promise<Schedule[]> {
-    return withErrorAlert(() =>
-      activeScheduleOfStaffAndService(staff!.id, serviceId)
-    );
-  }
-
-  async function serviceSupplier(page: number): Promise<Page<Service>> {
-    return withErrorAlert(() =>
-      servicesByBusiness(staff!.business.id, page, 10)
-    );
-  }
-
-  async function handleServiceSelect(service: Service) {
-    setService(service);
-    scheduleSupplier(service.id)
-      .then(setSchedule)
-      .catch(() => {});
-  }
-
-  async function handleScheduleCreation(formData: ScheduleFormData) {
-    return withAlert(
-      () =>
-        withErrorAlert(() => createSchedule(service!.id, staff!.id, formData)),
-      "Расписание создано",
-      "success"
-    );
-  }
 
   if (staff) {
+    const servicesOfBusinessFetcher = async (page: number): Promise<Page<Service>> => {
+      return withErrorAlert(() => client.query<{business: {services: Page<Service>}}>({
+            query: servicesQuery,
+            variables: {
+              businessId: staff.business!.id!,
+              page: page - 1
+            },
+          })
+          .then((response) => response.data)
+          .then(result => {
+            result.business.services.content.forEach(service => service.business = staff.business!);
+            return result.business.services;
+          })
+      );
+    }
+
+    const scheduleOfStaffFetcher = async (service: Service): Promise<Schedule[]> => {
+      return withErrorAlert(() => client.query<{staff: {activeSchedules: Schedule[]}}>({
+            query: scheduleQuery,
+            variables: {
+              staffId: staff.id!,
+              serviceId: service.id!
+            },
+          })
+          .then((response) => response.data)
+          .then(result => {
+            result.staff.activeSchedules.forEach(schedule => {
+              schedule.service = service;
+              schedule.staff = staff;
+            });
+            return result.staff.activeSchedules;
+          })
+      );
+    }
+
+    const handleServiceSelect = async (service: Service) => {
+      setService(service);
+      scheduleOfStaffFetcher(service)
+        .then(setSchedule)
+        .catch(() => {});
+    }
+
+    const scheduleCreationHandler = async (formData: ScheduleFormData) => {
+      return withErrorAlert(async () => {
+        if (service) {
+          await withAlert(() => client.mutate({
+            mutation: scheduleCreationMutation,
+            variables: {
+              serviceId: service.id!,
+              staffId: staff.id!,
+              input: formData
+            }
+          }),
+            "Расписание создано",
+            "success"
+          );
+        } else {
+          return Promise.reject("Услуга не выбрана")
+        }
+      });
+    }
+
     return (
       <Box display="flex" flexDirection="column" justifyContent="space-between">
         <StaffCard staff={staff} />
         <Box sx={{ display: "flex", flexDirection: "column" }}>
           <CardTabs
-            pageSupplier={serviceSupplier}
+            pageSupplier={servicesOfBusinessFetcher}
             CardComponent={(props) => (
               <SimpleServiceCard service={props.item} />
             )}
@@ -80,14 +163,14 @@ export default function StaffPage() {
           <Box mt={3}>
             <ManagedStaffScheduleTab
               schedules={schedules}
-              scheduleCreationHandler={handleScheduleCreation}
+              scheduleCreationHandler={scheduleCreationHandler}
             />
           </Box>
         </Box>
       </Box>
     );
-  } else if (error) return <ErrorPage message={error} />;
-  else return <SkeletonBody />;
+  } else if (loading) return <SkeletonBody />;
+    else return <ErrorPage message={error!.message} />;
 }
 
 function SkeletonBody() {

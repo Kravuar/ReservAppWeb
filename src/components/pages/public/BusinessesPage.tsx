@@ -6,9 +6,9 @@ import CardList from "../../parts/CardList";
 import { gql, useApolloClient } from "@apollo/client";
 
 const businessesQuery = gql`
-  {
+  query Businesses($page: Int!) {
     businesses(page: $page, pageSize: 10) {
-      contents {
+      content {
         id
         name
         ownerSub
@@ -26,12 +26,12 @@ export default function BusinessesPage() {
 
   const fetchBusinesses = async (page: number): Promise<Page<Business>> => {
     return withErrorAlert(() =>
-      client.query<Page<Business>>({
+      client.query<{businesses: Page<Business>}>({
           query: businessesQuery,
           variables: {
-            page: page,
+            page: page - 1,
           },
-        }).then((response) => response.data)
+        }).then((response) => response.data.businesses)
     );
   }
 

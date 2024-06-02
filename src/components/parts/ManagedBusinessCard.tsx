@@ -4,7 +4,7 @@ import BusinessCard from "./BusinessCard";
 import { Business } from "../../domain/Business";
 import { Page } from "../../domain/Page";
 import { Service } from "../../domain/Service";
-import { Staff, StaffInvitationDetailed } from "../../domain/Staff";
+import { Staff, StaffInvitation } from "../../domain/Staff";
 import ManagedServicesTab from "./ManagedServiceTab";
 import ManagedStaffTab from "./ManagedStaffTab";
 import { ServiceFormData } from "./ServiceForm";
@@ -25,11 +25,11 @@ export default function ManagedBusinessCard({
     page: number
   ) => Promise<Page<Service>>;
   staffPageSupplier: (page: number) => Promise<Page<Staff>>;
-  invitationPageSupplier: (page: number) => Promise<Page<StaffInvitationDetailed>>;
+  invitationPageSupplier: (page: number) => Promise<Page<StaffInvitation>>;
   serviceCreationHandler: (formData: ServiceFormData) => Promise<void>;
   staffInvitationHandler: (subject: string) => Promise<void>;
-  staffRemovalHandler: (staffId: number) => Promise<void>;
-  invitationDeclineHandler: (invitationId: number) => Promise<void>;
+  staffRemovalHandler: (staff: Staff) => Promise<void>;
+  invitationDeclineHandler: (invitation: StaffInvitation) => Promise<void>;
 }) {
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState(0);

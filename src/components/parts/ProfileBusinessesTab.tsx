@@ -5,7 +5,7 @@ import { Box, Button, Collapse } from "@mui/material";
 import BusinessForm from "./BusinessForm";
 import ManagedBusinessCard from "./ManagedBusinessCard";
 import { Service, ServiceFormData } from "../../domain/Service";
-import { Staff, StaffInvitationDetailed } from "../../domain/Staff";
+import { Staff, StaffInvitation } from "../../domain/Staff";
 import CardList from "./CardList";
 
 export default function ProfileBusinessesTab({
@@ -22,21 +22,21 @@ export default function ProfileBusinessesTab({
   pageSupplier: (page: number) => Promise<Page<Business>>;
   businessCreationHandler: (
     business: BusinessFormData
-  ) => Promise<Business>;
+  ) => Promise<void>;
   servicePageSupplier: (
-    businessId: number,
+    business: Business,
     name: string,
     page: number
   ) => Promise<Page<Service>>;
-  staffPageSupplier: (businessId: number, page: number) => Promise<Page<Staff>>;
-  invitationPageSupplier: (businessId: number, page: number) => Promise<Page<StaffInvitationDetailed>>;
+  staffPageSupplier: (business: Business, page: number) => Promise<Page<Staff>>;
+  invitationPageSupplier: (business: Business, page: number) => Promise<Page<StaffInvitation>>;
   serviceCreationHandler: (formData: ServiceFormData) => Promise<void>;
   staffInvitationHandler: (
     subject: string,
-    businessId: number
+    business: Business
   ) => Promise<void>;
-  staffRemovalHandler: (staffId: number) => Promise<void>;
-  invitationDeclineHandler: (invitationId: number) => Promise<void>;
+  staffRemovalHandler: (staff: Staff) => Promise<void>;
+  invitationDeclineHandler: (invitation: StaffInvitation) => Promise<void>;
 }) {
   const [open, setOpen] = useState<boolean>(false);
 
@@ -72,15 +72,15 @@ export default function ProfileBusinessesTab({
           <ManagedBusinessCard
             business={props.item}
             servicePageSupplier={(name, page) =>
-              servicePageSupplier(props.item.id, name, page)
+              servicePageSupplier(props.item, name, page)
             }
-            staffPageSupplier={(page) => staffPageSupplier(props.item.id, page)}
-            invitationPageSupplier={(page) => invitationPageSupplier(props.item.id, page)}
+            staffPageSupplier={(page) => staffPageSupplier(props.item, page)}
+            invitationPageSupplier={(page) => invitationPageSupplier(props.item, page)}
             serviceCreationHandler={(formData) =>
-              serviceCreationHandler({ businessId: props.item.id, ...formData })
+              serviceCreationHandler({ businessId: props.item.id!, ...formData })
             }
             staffInvitationHandler={(subject) =>
-              staffInvitationHandler(subject, props.item.id)
+              staffInvitationHandler(subject, props.item)
             }
             staffRemovalHandler={staffRemovalHandler}
             invitationDeclineHandler={invitationDeclineHandler}

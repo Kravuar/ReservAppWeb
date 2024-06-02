@@ -7,9 +7,9 @@ import gql from "graphql-tag";
 import { useApolloClient } from "@apollo/client";
 
 const servicesQuery = gql`
-  {
+  query Services($page: Int!) {
     services(page: $page, pageSize: 10) {
-      contents {
+      content {
         id
         name
         business {
@@ -30,14 +30,12 @@ export default function ServicesPage() {
 
   const fetchServices = async (page: number): Promise<Page<Service>> => {
     return withErrorAlert(() =>
-      client
-        .query<Page<Service>>({
+      client.query<{services: Page<Service>}>({
           query: servicesQuery,
           variables: {
-            page: page,
+            page: page - 1,
           },
-        })
-        .then((response) => response.data)
+        }).then((response) => response.data.services)
     );
   };
 

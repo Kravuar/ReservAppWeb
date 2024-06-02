@@ -44,18 +44,18 @@ export default function ServiceWithBusinessCard({ service }: { service: Service 
             <Box display="flex" flexDirection="column" alignItems="flex-end">
               <Button
                 component={Link}
-                to={`/home/businesses/${service.business.id}`}
+                to={`/home/businesses/${service.business!.id!}`}
               >
                 <Box display="flex" flexDirection="row" alignItems="center">
-                  <Avatar src={service.business.picture}>
+                  <Avatar src={service.business!.picture!}>
                     <Skeleton variant="circular" width={40} height={40} />
                   </Avatar>
                   <Typography marginLeft={1} variant="overline">
-                    {service.business.name}
+                    {service.business!.name!}
                   </Typography>
                 </Box>
               </Button>
-              <Rating value={service.business.rating} readOnly size="small" />
+              <Rating value={service.business!.rating!} readOnly size="small" />
             </Box>
           </Box>
           <Box

@@ -18,8 +18,8 @@ export default function StaffCard({ staff }: { staff: Staff }) {
       <CardMedia
         component="img"
         sx={{ width: "10%", padding: 2, borderRadius: 10 }}
-        image={staff.picture}
-        alt={staff.name}
+        image={staff.picture!}
+        alt={staff.name!}
       />
       {/* Staff Details on the right part */}
       <Box sx={{ display: "flex", flexDirection: "column", width: "90%" }}>
@@ -28,10 +28,10 @@ export default function StaffCard({ staff }: { staff: Staff }) {
           <Box display="flex" flexDirection="row" alignItems="center">
             <Typography component="div" variant="h3">
               <Button component={Link} to={`/profile/business/staff/${staff.id}`}>
-                {staff.name} ({staff.sub})
+                {staff.name!} ({staff.sub!})
               </Button>
             </Typography>
-            <Rating value={staff.rating} readOnly />
+            <Rating value={staff.rating!} readOnly />
           </Box>
           <Box
             sx={{
@@ -47,7 +47,7 @@ export default function StaffCard({ staff }: { staff: Staff }) {
               component="div"
               marginTop={1}
             >
-              {staff.description}
+              {staff.description!}
             </Typography>
           </Box>
         </CardContent>

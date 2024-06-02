@@ -1,5 +1,5 @@
 import { LocalDate, LocalTime } from "@js-joda/core";
-import { ReservationDetailed } from "../../domain/Schedule";
+import { Reservation } from "../../domain/Schedule";
 import { Box, Typography, Grid, Card, CardContent } from "@mui/material";
 
 export type ReserveAction = (
@@ -8,13 +8,13 @@ export type ReserveAction = (
   start: LocalTime
 ) => Promise<void>;
 
-export type ReservationCardProps<T extends ReservationDetailed> = {
+export type ReservationCardProps<T extends Reservation> = {
   reservation: T,
   cancelHandler: (reservationId: number) => Promise<void>;
   restoreHandler: (reservationId: number) => Promise<void>;
 }
 
-export default function ReservationBody<ReservationType extends ReservationDetailed>({
+export default function ReservationBody<ReservationType extends Reservation>({
   schedule,
   cancelHandler,
   restoreHandler,

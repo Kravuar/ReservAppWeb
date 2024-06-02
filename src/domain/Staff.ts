@@ -12,6 +12,7 @@ export class Staff {
     public sub?: string,
     public name?: string,
     public description?: string,
+    public active?: boolean,
     public business?: Business,
     public schedule?: ReservationSlot[]
   ) {

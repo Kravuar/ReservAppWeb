@@ -1,4 +1,4 @@
-import { ReservationDetailed } from "../../domain/Schedule";
+import { Reservation } from "../../domain/Schedule";
 import {
   Card,
   CardHeader,
@@ -19,21 +19,21 @@ export default function ReservationCard({
   cancelHandler,
   restoreHandler,
 }: {
-  reservation: ReservationDetailed;
+  reservation: Reservation;
   cancelHandler: (reservationId: number) => Promise<void>;
   restoreHandler: (reservationId: number) => Promise<void>;
 }) {
   const [enabled, setEnabled] = useState<boolean>(true);
 
-  useEffect(() => setEnabled(reservation.active), [reservation]);
+  useEffect(() => setEnabled(reservation.active!), [reservation]);
 
   function handleReservationAction() {
     if (enabled)
-      cancelHandler(reservation.id)
+      cancelHandler(reservation.id!)
         .then(() => setEnabled(false))
         .catch(() => {});
     else
-      restoreHandler(reservation.id)
+      restoreHandler(reservation.id!)
         .then(() => setEnabled(true))
         .catch(() => {});
   }
@@ -49,7 +49,7 @@ export default function ReservationCard({
             component="p"
             gutterBottom
           >
-            Запись, {reservation.staff.name}
+            Запись, {reservation.staff!.name}
           </Typography>
         }
         subheader={
@@ -71,7 +71,7 @@ export default function ReservationCard({
           sx={{ display: "flex", alignItems: "center", mb: 2 }}
         >
           <AccessTime sx={{ mr: 1 }} />
-          {`${reservation.start.toString()} - ${reservation.end.toString()}`}
+          {`${reservation.start!.toString()} - ${reservation.end!.toString()}`}
         </Typography>
         <Box display="flex" justifyContent="flex-end">
           <IconButton

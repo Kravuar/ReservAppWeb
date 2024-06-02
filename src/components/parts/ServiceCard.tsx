@@ -17,8 +17,8 @@ export default function ServiceCard({ service }: { service: Service }) {
       <CardMedia
         component="img"
         sx={{ width: "30%", padding: 2 }}
-        image={service.picture}
-        alt={service.name}
+        image={service.picture!}
+        alt={service.name!}
       />
       {/* Service Details on the right part */}
       <Box sx={{ display: "flex", flexDirection: "column", width: "70%" }}>
@@ -26,11 +26,11 @@ export default function ServiceCard({ service }: { service: Service }) {
           {/* Service Name and Rating */}
           <Box display="flex" flexDirection="row" alignItems="center">
             <Typography component="div" variant="h3">
-              <Button component={Link} to={`/home/services/${service.id}`}>
-                {service.name}
+              <Button component={Link} to={`/home/services/${service.id!}`}>
+                {service.name!}
               </Button>
             </Typography>
-            <Rating value={service.rating} readOnly />
+            <Rating value={service.rating!} readOnly />
           </Box>
           <Box
             sx={{
@@ -46,7 +46,7 @@ export default function ServiceCard({ service }: { service: Service }) {
               component="div"
               marginTop={1}
             >
-              {service.description}
+              {service.description!}
             </Typography>
           </Box>
         </CardContent>

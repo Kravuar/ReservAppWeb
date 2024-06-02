@@ -20,8 +20,8 @@ export default function SimpleServiceCard({
       <CardMedia
         component="img"
         sx={{ width: "30%", padding: 2 }}
-        image={service.picture}
-        alt={service.name}
+        image={service.picture!}
+        alt={service.name!}
       />
       {/* Service Details on the right part */}
       <Box sx={{ display: "flex", flexDirection: "column", width: "70%" }}>
@@ -29,7 +29,7 @@ export default function SimpleServiceCard({
           {/* Service Name */}
           <Typography component="div" variant="h3">
             <Button component={Link} to={`/home/services/${service.id}`}>
-              {service.name}
+              {service.name!}
             </Button>
           </Typography>
         </CardContent>

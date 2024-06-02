@@ -3,153 +3,393 @@ import useAuthUser from "../../../services/oauth/useOAuthUser";
 import ProfileCard from "../../parts/ProfileCard";
 import { useState } from "react";
 import ProfileBusinessesTab from "../../parts/ProfileBusinessesTab";
-import {
-  myDetailedBusinesses,
-  myReservations,
-  cancelReservation,
-  restoreReservation,
-  createBusiness,
-  servicesByBusiness,
-  staffByBusinessId,
-  createService,
-  inviteStaff,
-  removeStaff,
-  reservationsToMe,
-  getMyInvitations,
-  getInvitationsOfBusiness,
-  acceptInvitation,
-  declineInvitation,
-} from "../../../services/api";
 import { Business, BusinessFormData } from "../../../domain/Business";
 import { Page } from "../../../domain/Page";
-import { ReservationDetailed, ReservationFromClientDetailed } from "../../../domain/Schedule";
+import { Reservation } from "../../../domain/Schedule";
 import { LocalDate } from "@js-joda/core";
 import ProfileReservationsTab from "../../parts/ProfileReservationsTab";
 import { useAlert } from "../../util/Alert";
 import { Service, ServiceFormData } from "../../../domain/Service";
-import { Staff, StaffInvitationDetailed } from "../../../domain/Staff";
+import { Staff, StaffInvitation } from "../../../domain/Staff";
 import ReservationCard from "../../parts/ReservationCard";
 import ReservationFromClientCard from "../../parts/ReservationFromClientCard";
 import ProfileInvitationTab from "../../parts/ProfileInvitationTab";
+import { gql, useApolloClient } from "@apollo/client";
+import { groupBy } from "../../../services/utils";
+
+const myBusinessesQuery = gql`
+  query MyBusinesses($page: Int!) {
+    myBusinesses(page: $page, pageSize: 10) {
+      content {
+        id
+        name
+        ownerSub
+        active
+        description
+      }
+      totalPages
+    }
+  }
+`;
+
+const myReservationsQuery = gql`
+  query MyReservations($from: LocalDate!, $to: LocalDate!) {
+    myReservations(from: $from, to: $to) {
+      id
+      date
+      start
+      end
+      cost
+      active
+      staff {
+        name
+      }
+    }
+  }
+`;
+
+const reservationsToMeQuery = gql`
+  query ReservationsToMe($from: LocalDate!, $to: LocalDate!) {
+    reservationsToMe(from: $from, to: $to) {
+      id
+      date
+      start
+      end
+      cost
+      clientSub
+      active
+    }
+  }
+`;
+
+const servicesQuery = gql`
+  query Services($businessId: ID!, $page: Int!) {
+    business(businessId: $businessId) {
+      services(page: $page, pageSize: 10) {
+        id
+        name
+        description
+        active
+      }
+    }
+  }
+`;
+
+const staffQuery = gql`
+  query StaffOfBusiness($businessId: ID!, $page: Int!) {
+    business(businessId: $businessId) {
+      staff(page: $page, pageSize: 10) {
+        content {
+          id
+          sub
+          name
+          description
+          active
+        }
+        totalPages
+      }
+    }
+  }
+`;
+
+const myInvitationsQuery = gql`
+  query MyInvitations($page: Int!) {
+    myInvitations(page: $page, pageSize: 10) {
+      content {
+        id
+        status
+        createdAt
+        business {
+          name
+        }
+      }
+      totalPages
+    }
+  }
+`;
+
+const invitationsOfBusinessQuery = gql`
+  query InvitationsOfBusiness($businessId: ID!, $page: Int!) {
+    business(businessId: $businessId) {
+      staffInvitations(page: $page, pageSize: 10) {
+        content {
+          id
+          status
+          createdAt
+          sub
+        }
+        totalPages
+      }
+    }
+  }
+`;
+
+const cancelReservationMutation = gql`
+  mutation CancelReservation($reservationId: ID!) {
+    cancelReservation(reservationId: $reservationId) {
+      id
+    }
+  }
+`;
+
+const restoreReservationMutation = gql`
+  mutation RestoreReservation($reservationId: ID!) {
+    restoreReservation(reservationId: $reservationId) {
+      id
+    }
+  }
+`;
+
+const createBusinessMutation = gql`
+  mutation CreateBusiness($input: BusinessInput!) {
+    createBusiness(input: $input) {
+      id
+    }
+  }
+`;
+
+const createServiceMutation = gql`
+  mutation CreateService($input: ServiceInput!) {
+    createService(input: $input) {
+      id
+    }
+  }
+`;
+
+const inviteStaffMutation = gql`
+  mutation InviteStaff($userSub: String!, $businessId: ID!) {
+    inviteStaff(userSub: $userSub, businessId: $businessId) {
+      id
+    }
+  }
+`;
+
+const removeStaffMutation = gql`
+  mutation RemoveStaff($staffId: ID!) {
+    removeStaff(staffId: $staffId) {
+      id
+    }
+  }
+`;
+
+const acceptInvitationMutation = gql`
+  mutation AcceptInvitation($invitationId: ID!) {
+    acceptInvitation(invitationId: $invitationId) {
+      id
+    }
+  }
+`;
+
+const declineInvitationMutation = gql`
+  mutation DeclineInvitation($invitationId: ID!) {
+    declineInvitation(invitationId: $invitationId) {
+      id
+    }
+  }
+`;
 
 export default function ProfilePage() {
   const user = useAuthUser();
   const { withErrorAlert, withAlert } = useAlert();
+  const client = useApolloClient();
   const [tab, setTab] = useState(0);
 
-  async function fetchBusinesses(
-    page: number
-  ): Promise<Page<Business>> {
-    return withErrorAlert(() => myDetailedBusinesses(page, 10));
-  }
-
-  async function reservationCancelHandler(reservationId: number) {
-    return withAlert(
-      () => withErrorAlert(() => cancelReservation(reservationId)),
-      "Запись отменена",
-      "success"
+  const fetchBusinesses = async (page: number): Promise<Page<Business>> => {
+    return withErrorAlert(() => client.query<{myBusinesses: Page<Business>}>({
+          query: myBusinessesQuery,
+          variables: {
+            page: page - 1,
+          },
+        }).then((response) => response.data.myBusinesses)
     );
   }
 
-  async function reservationRestoreHandler(reservationId: number) {
-    return withAlert(
-      () => withErrorAlert(() => restoreReservation(reservationId)),
-      "Запись восстановлена",
-      "success"
+  const reservationCancelHandler = async (reservationId: number) => {
+    return withErrorAlert(() => withAlert(() => client.mutate({
+            mutation: cancelReservationMutation,
+            variables: {
+              reservationId: reservationId
+            }
+          }),
+          "Запись отменена",
+          "success"
+        ).then(() => {})
     );
   }
 
-  async function fetchMyReservations(
-    from: LocalDate,
-    to: LocalDate
-  ): Promise<Map<LocalDate, ReservationDetailed[]>> {
-    return withErrorAlert(() => myReservations(from, to));
-  }
-
-  async function fetchReservationsToMe(
-    from: LocalDate,
-    to: LocalDate
-  ): Promise<Map<LocalDate, ReservationFromClientDetailed[]>> {
-    return withErrorAlert(() => reservationsToMe(from, to));
-  }
-
-  async function businessCreationHandler(
-    formData: BusinessFormData
-  ): Promise<Business> {
-    return withAlert(
-      () => withErrorAlert(() => createBusiness(formData)),
-      "Бизнес создан",
-      "success"
+  const reservationRestoreHandler = async (reservationId: number) => {
+    return withErrorAlert(() => withAlert(() => client.mutate({
+            mutation: restoreReservationMutation,
+            variables: {
+              reservationId: reservationId
+            }
+          }),
+          "Запись восстановлена",
+          "success"
+        ).then(() => {})
     );
   }
 
-  async function servicePageSupplier(
-    businessId: number,
-    name: string,
-    page: number
-  ): Promise<Page<Service>> {
-    // TODO: adjust, when server implements search
-    return withErrorAlert(() => servicesByBusiness(businessId, page, 10));
+  const myReservationsFetcher = async (from: LocalDate, to: LocalDate): Promise<Map<LocalDate, Reservation[]>> => {
+    return withErrorAlert(() => client.query<{myReservations: Reservation[]}>({
+        query: myReservationsQuery,
+        variables: {
+          from: from,
+          to: to,
+        },
+      }).then((response) => response.data)
+        .then((result) => groupBy(result.myReservations, reservation => reservation.date!))
+    );
   }
 
-  async function staffPageSupplier(
-    businessId: number,
-    page: number
-  ): Promise<Page<Staff>> {
-    return withErrorAlert(() => staffByBusinessId(businessId, page, 10));
+  const reservationsToMeFetcher = async (from: LocalDate, to: LocalDate): Promise<Map<LocalDate, Reservation[]>> => {
+    return withErrorAlert(() => client.query<{reservationsToMe: Reservation[]}>({
+        query: reservationsToMeQuery,
+        variables: {
+          from: from,
+          to: to,
+        },
+      }).then((response) => response.data)
+        .then((result) => groupBy(result.reservationsToMe, reservation => reservation.date!))
+    );
   }
 
-  async function serviceCreationHandler(
-    formData: ServiceFormData
-  ): Promise<void> {
-    return withAlert(
-      () => withErrorAlert(() => createService(formData)),
-      "Услуга добавлена",
-      "success"
-    ).then();
+  const businessCreationHandler = async (formData: BusinessFormData): Promise<void> => {
+    return withErrorAlert(() => withAlert(() => client.mutate<Business>({
+            mutation: createBusinessMutation,
+            variables: {
+              input: formData
+            }
+          }),
+          "Бизнес создан",
+          "success"
+        ).then(() => {})
+    );
   }
 
-  async function staffInvitationHandler(
-    subject: string,
-    businessId: number
-  ): Promise<void> {
-    return withAlert(
-      () => withErrorAlert(() => inviteStaff(subject, businessId)),
-      "Сотрудник приглашён",
-      "success"
-    ).then();
+  const serviceCreationHandler = async (formData: ServiceFormData): Promise<void> => {
+    return withErrorAlert(() => withAlert(() => client.mutate<Service>({
+          mutation: createServiceMutation,
+          variables: {
+            input: formData
+          }
+        }),
+        "Услуга создана",
+        "success"
+      ).then(() => {})
+    );
   }
 
-  async function staffRemovalHandler(staffId: number): Promise<void> {
-    return withAlert(
-      () => withErrorAlert(() => removeStaff(staffId)),
-      "Сотрудник отстранён",
-      "success"
-    ).then();
+  const servicesOfBusinessFetcher = async (business: Business, name: string, page: number): Promise<Page<Service>> => {
+    return withErrorAlert(() => client.query<{business: {services: Page<Service>}}>({
+          query: servicesQuery,
+          variables: {
+            businessId: business.id,
+            page: page - 1
+          },
+        })
+        .then((response) => response.data)
+        .then(result => {
+          result.business.services.content.forEach(service => service.business = business);
+          return result.business.services;
+        })
+    );
   }
 
-  async function invitationSupplierByUser(page: number): Promise<Page<StaffInvitationDetailed>> {
-    return withErrorAlert(() => getMyInvitations(page, 10));
+  const staffOfBusinessFetcher = async (business: Business, page: number): Promise<Page<Staff>> => {
+    return withErrorAlert(() => client.query<{business: {staff: Page<Staff>}}>({
+          query: staffQuery,
+          variables: {
+            businessId: business.id,
+            page: page - 1
+          },
+        })
+        .then((response) => response.data)
+        .then(result => {
+          result.business.staff.content.forEach(staff => staff.business = business);
+          return result.business.staff;
+        })
+    );
+  }
+
+  const staffInvitationHandler = async (subject: string, business: Business): Promise<void> => {
+    return withErrorAlert(() => withAlert(() => client.mutate({
+          mutation: inviteStaffMutation,
+          variables: {
+            userSub: subject,
+            businessId: business.id
+          }
+        }),
+        "Пользователь приглашён",
+        "success"
+      ).then(() => {})
+    );
+  }
+
+  const staffRemovalHandler = async (staff: Staff): Promise<void> => {
+    return withErrorAlert(() => withAlert(() => client.mutate({
+          mutation: removeStaffMutation,
+          variables: {
+            staffId: staff.id
+          }
+        }),
+        "Сотрудник ликвидирован",
+        "success"
+      ).then(() => {})
+    );
+  }
+
+  async function acceptInvitationHandler(invitation: StaffInvitation): Promise<void> {
+    return withErrorAlert(() => withAlert(() => client.mutate({
+          mutation: acceptInvitationMutation,
+          variables: {
+            invitationId: invitation.id
+          }
+        }),
+        "Приглашение принято",
+        "success"
+      ).then(() => {})
+    );
+  }
+
+  const declineInvitationHandler = async (invitation: StaffInvitation): Promise<void> => {
+    return withErrorAlert(() => withAlert(() => client.mutate({
+          mutation: declineInvitationMutation,
+          variables: {
+            invitationId: invitation.id
+          }
+        }),
+        "Приглашение отклонено",
+        "success"
+      ).then(() => {})
+    );
+  }
+
+  const myInvitationsFetcher = async (page: number): Promise<Page<StaffInvitation>> => {
+    return withErrorAlert(() => client.query<{myInvitations: Page<StaffInvitation>}>({
+          query: myInvitationsQuery,
+          variables: {
+            page: page - 1
+          },
+        })
+        .then((response) => response.data.myInvitations)
+    );
   }
   
-  async function invitationSupplierByBusiness(businessId: number, page: number): Promise<Page<StaffInvitationDetailed>> {
-    return withErrorAlert(() => getInvitationsOfBusiness(businessId, page, 10));
-  }
-
-  async function acceptInvitationHandler(invitationId: number): Promise<void> {
-    return withAlert(
-      () => withErrorAlert(() => acceptInvitation(invitationId)),
-      "Приглашение принято",
-      "success"
-    ).then();
-  }
-
-  async function declineInvitationHandler(invitationId: number): Promise<void> {
-    return withAlert(
-      () => withErrorAlert(() => declineInvitation(invitationId)),
-      "Приглашение отклонено  ",
-      "success"
-    ).then();
+  const invitationsOfBusinessFetcher = async (business: Business, page: number): Promise<Page<StaffInvitation>> => {
+    return withErrorAlert(() => client.query<{business: {staffInvitations: Page<StaffInvitation>}}>({
+          query: invitationsOfBusinessQuery,
+          variables: {
+            businessId: business.id,
+            page: page - 1
+          },
+        })
+        .then((response) => response.data)
+        .then(result => {
+          result.business.staffInvitations.content.forEach(staffInvitation => staffInvitation.business = business);
+          return result.business.staffInvitations;
+        })
+    );
   }
 
   return (
@@ -172,9 +412,9 @@ export default function ProfilePage() {
             <ProfileBusinessesTab
               pageSupplier={fetchBusinesses}
               businessCreationHandler={businessCreationHandler}
-              servicePageSupplier={servicePageSupplier}
-              staffPageSupplier={staffPageSupplier}
-              invitationPageSupplier={invitationSupplierByBusiness}
+              servicePageSupplier={servicesOfBusinessFetcher}
+              staffPageSupplier={staffOfBusinessFetcher}
+              invitationPageSupplier={invitationsOfBusinessFetcher}
               serviceCreationHandler={serviceCreationHandler}
               staffInvitationHandler={staffInvitationHandler}
               staffRemovalHandler={staffRemovalHandler}
@@ -185,7 +425,7 @@ export default function ProfilePage() {
             <ProfileReservationsTab
               cancelHandler={reservationCancelHandler}
               restoreHandler={reservationRestoreHandler}
-              reservationsSupplier={fetchMyReservations}
+              reservationsSupplier={myReservationsFetcher}
               CardComponent={ReservationCard}
             />
           )}
@@ -193,13 +433,13 @@ export default function ProfilePage() {
             <ProfileReservationsTab
               cancelHandler={reservationCancelHandler}
               restoreHandler={reservationRestoreHandler}
-              reservationsSupplier={fetchReservationsToMe}
+              reservationsSupplier={reservationsToMeFetcher}
               CardComponent={ReservationFromClientCard}
             />
           )}
           {tab === 3 && (
             <ProfileInvitationTab
-              pageSupplier={invitationSupplierByUser}
+              pageSupplier={myInvitationsFetcher}
               acceptHandler={acceptInvitationHandler}
               declineHandler={declineInvitationHandler}
             />

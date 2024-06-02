@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { LocalDate } from "@js-joda/core";
-import { ReservationSlotDetailed } from "../../domain/Schedule";
+import { ReservationSlot } from "../../domain/Schedule";
 import { Staff } from "../../domain/Staff";
 import {
   Box,
@@ -20,7 +20,7 @@ export type ScheduleSupplier = (
   staffId: number,
   from: LocalDate,
   to: LocalDate
-) => Promise<Map<LocalDate, ReservationSlotDetailed[]>>;
+) => Promise<Map<LocalDate, ReservationSlot[]>>;
 export type StaffSupplier = (
   page: number,
   pageSize: number
@@ -40,7 +40,7 @@ export default function StaffScheduleTab({
   const [staffPage, setStaffPage] = useState(1);
   const [selectedDate, setSelectedDate] = useState<LocalDate>(LocalDate.now());
   const [schedule, setSchedule] = useState<
-    Map<LocalDate, ReservationSlotDetailed[]>
+    Map<LocalDate, ReservationSlot[]>
   >(new Map());
 
   useEffect(() => {
@@ -67,7 +67,7 @@ export default function StaffScheduleTab({
   ) {
     setSelectedDate(newSelectedDate);
     if (currentStaff)
-      scheduleSupplier(currentStaff.id, newStartOfWeek, newEndOfWeek)
+      scheduleSupplier(currentStaff.id!, newStartOfWeek, newEndOfWeek)
         .then(setSchedule)
         .catch(() => {})
   }
@@ -97,7 +97,7 @@ export default function StaffScheduleTab({
             showLastButton
           />
           <Tabs
-            value={currentStaff != null ? currentStaff.id : false}
+            value={currentStaff != null ? currentStaff.id! : false}
             onChange={(_, newStaffId) => handleStaffChange(newStaffId)}
             variant="scrollable"
             scrollButtons="auto"
@@ -106,10 +106,10 @@ export default function StaffScheduleTab({
           >
             {staffList?.content.map((staff) => (
               <Tab
-                label={staff.name}
-                value={staff.id}
-                key={staff.id}
-                icon={<Avatar src={staff.picture} />}
+                label={staff.name!}
+                value={staff.id!}
+                key={staff.id!}
+                icon={<Avatar src={staff.picture!} />}
               />
             ))}
           </Tabs>
@@ -129,16 +129,16 @@ export default function StaffScheduleTab({
               backgroundColor: "background.paper",
             }}
           >
-            <Rating value={currentStaff.rating} readOnly />
+            <Rating value={currentStaff.rating!} readOnly />
             <Typography variant="body1">
-              {currentStaff.description}
+              {currentStaff.description!}
             </Typography>
           </Box>
         )}
       </Box>
       <Box>
         {currentStaff && (
-          <ScheduleBody key={currentStaff.id} schedule={schedule} onReserve={onReserve} showStaff={false}/>
+          <ScheduleBody key={currentStaff.id!} schedule={schedule} onReserve={onReserve} showStaff={false}/>
         )}
       </Box>
     </Box>

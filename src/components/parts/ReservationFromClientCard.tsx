@@ -1,4 +1,4 @@
-import { ReservationFromClientDetailed } from "../../domain/Schedule";
+import { Reservation } from "../../domain/Schedule";
 import {
   Card,
   CardHeader,
@@ -23,21 +23,21 @@ export default function ReservationFromClientCard({
   cancelHandler,
   restoreHandler,
 }: {
-  reservation: ReservationFromClientDetailed;
+  reservation: Reservation;
   cancelHandler: (reservationId: number) => Promise<void>;
   restoreHandler: (reservationId: number) => Promise<void>;
 }) {
   const [enabled, setEnabled] = useState<boolean>(true);
 
-  useEffect(() => setEnabled(reservation.active), [reservation]);
+  useEffect(() => setEnabled(reservation.active!), [reservation]);
 
   function handleReservationAction() {
     if (enabled)
-      cancelHandler(reservation.id)
+      cancelHandler(reservation.id!)
         .then(() => setEnabled(false))
         .catch(() => {});
     else
-      restoreHandler(reservation.id)
+      restoreHandler(reservation.id!)
         .then(() => setEnabled(true))
         .catch(() => {});
   }
@@ -71,13 +71,13 @@ export default function ReservationFromClientCard({
             aria-label="service"
             aria-haspopup="true"
             component={Link}
-            to={`/home/services/${reservation.service.id}`}
+            to={`/home/services/${reservation.service!.id!}`}
             color="inherit"
             sx={{ borderRadius: 0, px: 0 }}
           >
             <MiscellaneousServices sx={{ mr: 1 }} />
             <Typography variant="h6">
-              {reservation.service.name}
+              {reservation.service!.name!}
             </Typography>
           </IconButton>
         }
@@ -90,7 +90,7 @@ export default function ReservationFromClientCard({
           sx={{ display: "flex", alignItems: "center", mb: 2 }}
         >
           <AccessTime sx={{ mr: 1 }} />
-          {`${reservation.start.toString()} - ${reservation.end.toString()}`}
+          {`${reservation.start!.toString()} - ${reservation.end!.toString()}`}
         </Typography>
         <Box display="flex" justifyContent="flex-end">
           <IconButton

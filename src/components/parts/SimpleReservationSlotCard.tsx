@@ -42,7 +42,7 @@ export default function SimpleReservationSlotCard({
           sx={{ display: "flex", alignItems: "center", mb: 2 }}
         >
           <AccessTime sx={{ mr: 1 }} />
-          {`${reservationSlot.start.truncatedTo(ChronoUnit.MINUTES).toString()} - ${reservationSlot.end.truncatedTo(ChronoUnit.MINUTES).toString()}`}
+          {`${reservationSlot.start!.truncatedTo(ChronoUnit.MINUTES).toString()} - ${reservationSlot.end!.truncatedTo(ChronoUnit.MINUTES).toString()}`}
         </Typography>
         <Typography
           variant="body1"

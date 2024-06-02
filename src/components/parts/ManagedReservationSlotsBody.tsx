@@ -1,4 +1,4 @@
-import { ReservationSlotDetailed } from "../../domain/Schedule";
+import { ReservationSlot } from "../../domain/Schedule";
 import { Grid } from "@mui/material";
 import ReservationSlotCard from "./ReservationSlotCard";
 
@@ -7,8 +7,8 @@ export default function ManagedReservationSlotsBody({
   reserveHandler,
   showStaff,
 }: {
-  slots: ReservationSlotDetailed[];
-  reserveHandler: (slot: ReservationSlotDetailed) => Promise<void>;
+  slots: ReservationSlot[];
+  reserveHandler: (slot: ReservationSlot) => Promise<void>;
   showStaff: boolean;
 }) {
   return (

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -8,7 +8,7 @@ import {
   IconButton,
   CardHeader,
 } from "@mui/material";
-import { InvitationStatus, StaffInvitationDetailed } from "../../domain/Staff";
+import { InvitationStatus, StaffInvitation } from "../../domain/Staff";
 import { Cancel, Check } from "@mui/icons-material";
 import { ChronoUnit } from "@js-joda/core";
 
@@ -30,9 +30,9 @@ export default function InvitationCard({
   acceptHandler,
   declineHandler,
 }: {
-  invitation: StaffInvitationDetailed;
-  acceptHandler?: (invitationId: number) => Promise<void>;
-  declineHandler: (invitationId: number) => Promise<void>;
+  invitation: StaffInvitation;
+  acceptHandler?: () => Promise<void>;
+  declineHandler: () => Promise<void>;
 }) {
   const [pending, setPending] = useState<boolean>(true);
 
@@ -43,13 +43,13 @@ export default function InvitationCard({
 
   const handleAccept = () => {
     if (acceptHandler)
-      acceptHandler(invitation.id)
+      acceptHandler()
         .then(() => setPending(false))
         .catch(() => {});
   };
 
   const handleDecline = () => {
-    declineHandler(invitation.id)
+    declineHandler()
       .then(() => setPending(false))
       .catch(() => {});
   };
@@ -67,7 +67,7 @@ export default function InvitationCard({
         sx={{ display: "flex", flexDirection: "row", alignItems: "center" }}
       >
         <Chip
-          label={getReadableStatus(invitation.status)}
+          label={getReadableStatus(invitation.status!)}
           color={
             invitation.status === InvitationStatus.ACCEPTED
               ? "success"
@@ -78,8 +78,8 @@ export default function InvitationCard({
           sx={{ mr: 2 }}
         />
         <Typography variant="subtitle1" color="text.secondary" component="div">
-          Создано: {invitation.createdAt.toLocalDate().toString()} в{" "}
-          {invitation.createdAt.toLocalTime().truncatedTo(ChronoUnit.SECONDS).toString()}
+          Создано: {invitation.createdAt!.toLocalDate().toString()} в{" "}
+          {invitation.createdAt!.toLocalTime().truncatedTo(ChronoUnit.SECONDS).toString()}
         </Typography>
       </CardContent>
       {pending && (

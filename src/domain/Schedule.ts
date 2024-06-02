@@ -83,9 +83,9 @@ export class ReservationSlot {
   constructor(
     start?: string | LocalTime,
     end?: string | LocalTime,
-    date?: string | LocalDate,
     public cost?: number,
     public maxReservations?: number,
+    date?: string | LocalDate,
     public reservationsLeft?: number,
     public service?: Service,
     public staff?: Staff
@@ -112,6 +112,7 @@ export class Reservation {
     date?: string | LocalDate,
     createdAt?: string | LocalDateTime,
     public cost?: number,
+    public active?: boolean,
     public staff?: Staff,
     public service?: Service,
     public clientSub?: string

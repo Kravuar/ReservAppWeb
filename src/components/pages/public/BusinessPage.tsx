@@ -10,7 +10,7 @@ import gql from "graphql-tag";
 import { useApolloClient, useQuery } from "@apollo/client";
 
 const businessQuery = gql`
-  {
+  query Business($businessId: ID!) {
     business(businessId: $businessId) {
       id
       name
@@ -22,13 +22,15 @@ const businessQuery = gql`
 `;
 
 const servicesQuery = gql`
-  {
+  query ServicesOfBusiness($businessId: ID!, $page: Int!) {
     business(businessId: $businessId) {
       services(page: $page, pageSize: 10) {
-        id
-        name
-        description
-        active
+        content {
+          id
+          name
+          description
+        }
+        totalPages
       }
     }
   }
@@ -38,22 +40,22 @@ export default function BusinessPage() {
   const id = Number(useParams<{ id: string }>().id);
   const { withErrorAlert } = useAlert();
   const client = useApolloClient();
-  const {loading, error, data: business} = useQuery<Business>(businessQuery, {variables: {id: id}});
+  const {loading, error, data} = useQuery<{business: Business}>(businessQuery, {variables: {businessId: id}});
+  const business = data?.business;
 
   if (business) {
     const fetchServicesOfBusiness = async (page: number): Promise<Page<Service>> => {
-      return withErrorAlert(() =>
-        client.query<Page<Service>>({
+      return withErrorAlert(() => client.query<{business: {services: Page<Service>}}>({
             query: servicesQuery,
             variables: {
               businessId: id,
-              page: page
+              page: page - 1 - 1
             },
           })
           .then((response) => response.data)
-          .then(page => {
-            page.content.forEach(service => service.business = business);
-            return page;
+          .then(result => {
+            result.business.services.content.forEach(service => service.business = business);
+            return result.business.services;
           })
       );
     }

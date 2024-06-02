@@ -13,7 +13,7 @@ export default function ManagedStaffCard({
 }) {
   const [enabled, setEnabled] = useState<boolean>(false);
 
-  useEffect(() => setEnabled(staff.active), [staff]);
+  useEffect(() => setEnabled(staff.active!), [staff]);
 
   function handleAction() {
     if (enabled)

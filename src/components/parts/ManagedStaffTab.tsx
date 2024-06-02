@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Box, Button, Collapse, Typography, Paper } from "@mui/material";
-import { Staff, StaffInvitationDetailed } from "../../domain/Staff";
+import { Staff, StaffInvitation } from "../../domain/Staff";
 import { Page } from "../../domain/Page";
 import StaffForm from "./StaffForm";
 import ManagedStaffCard from "./ManagedStaffCard";
@@ -15,10 +15,10 @@ export default function ManagedStaffTab({
   declineHandler
 }: {
   staffPageSupplier: (page: number) => Promise<Page<Staff>>;
-  invitationPageSupplier: (page: number) => Promise<Page<StaffInvitationDetailed>>;
+  invitationPageSupplier: (page: number) => Promise<Page<StaffInvitation>>;
   staffInvitationHandler: (subject: string) => Promise<void>;
-  removeHandler: (staffId: number) => Promise<void>;
-  declineHandler: (invitationId: number) => Promise<void>;
+  removeHandler: (staff: Staff) => Promise<void>;
+  declineHandler: (invitation: StaffInvitation) => Promise<void>;
 }) {
   const [createOpen, setCreateOpen] = useState(false);
 
@@ -45,7 +45,7 @@ export default function ManagedStaffTab({
             CardComponent={(props) => (
               <ManagedStaffCard
                 staff={props.item}
-                removeHandler={() => removeHandler(props.item.id)}
+                removeHandler={() => removeHandler(props.item)}
               />
             )}
           />
@@ -61,7 +61,7 @@ export default function ManagedStaffTab({
             CardComponent={(props) => (
               <SimpleInvitationCard
                 invitation={props.item}
-                declineHandler={declineHandler}
+                declineHandler={() => declineHandler(props.item)}
               />
             )}
           />

@@ -16,7 +16,7 @@ export default function ManagedStaffScheduleTab({
   scheduleCreationHandler,
 }: {
   schedules: Schedule[];
-  scheduleCreationHandler: (formData: ScheduleFormData) => Promise<Schedule>;
+  scheduleCreationHandler: (formData: ScheduleFormData) => Promise<void>;
 }) {
   const [open, setOpen] = useState<boolean>(false);
   const [patterns, setPatterns] = useState<SchedulePatternFormData[]>([]);

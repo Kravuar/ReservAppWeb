@@ -22,7 +22,7 @@ export default function ScheduleCard({ schedule }: { schedule: Schedule }) {
           component="div"
           marginTop={1}
         >
-          Период: {schedule.start.toString()} - {schedule.end.toString()}
+          Период: {schedule.start!.toString()} - {schedule.end!.toString()}
         </Typography>
         <Box textAlign="center" mt={2}>
           <Button
@@ -35,7 +35,7 @@ export default function ScheduleCard({ schedule }: { schedule: Schedule }) {
           </Button>
         </Box>
         <Collapse in={open}>
-          {schedule.patterns.map((pattern) => (
+          {schedule.patterns!.map((pattern) => (
             <SchedulePatternCard key={pattern.id} pattern={pattern} />
           ))}
         </Collapse>

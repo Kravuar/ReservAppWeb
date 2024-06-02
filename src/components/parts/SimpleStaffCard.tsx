@@ -4,8 +4,8 @@ import { Link } from "react-router-dom";
 
 export default function SimpleStaffCard({ staff }: { staff: Staff }) {
   return (
-    <IconButton component={Link} to={`/profile/business/staff/${staff.id}`}>
-      <Avatar src={staff.picture}>
+    <IconButton component={Link} to={`/profile/business/staff/${staff.id!}`}>
+      <Avatar src={staff.picture!}>
         <Skeleton variant="circular" width={40} height={40} />
       </Avatar>
       <Typography
@@ -19,7 +19,7 @@ export default function SimpleStaffCard({ staff }: { staff: Staff }) {
           borderRadius: 1,
         }}
       >
-        {staff.name}
+        {staff.name!}
       </Typography>
     </IconButton>
   );

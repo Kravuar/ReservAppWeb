@@ -1,7 +1,6 @@
 import { ApolloClient, ApolloLink, HttpLink, InMemoryCache } from "@apollo/client";
 import { setContext } from '@apollo/client/link/context';
 import OktaAuth from "@okta/okta-auth-js";
-import axios, { AxiosError } from "axios";
 
 export const CALLBACK_PATH = process.env.REACT_APP_CALLBACK_PATH;
 const CLIENT_ID = process.env.REACT_APP_CLIENT_ID;
@@ -22,32 +21,10 @@ const config = {
 
 export const oktaAuth = new OktaAuth(config);
 
-axios.interceptors.response.use(
-  (response) => response,
-  (error: AxiosError) => {
-    if (error.response?.data) {
-      const errorMessage = (error.response.data || error.message)  as string;
-
-      const newError = new Error(errorMessage);
-      newError.stack = error.stack;
-
-      return Promise.reject(newError);
-    }
-
-    return Promise.reject(error);
-  }
-);
-axios.defaults.baseURL = process.env.REACT_APP_BACKEND;
-axios.interceptors.request.use((request) => {
-  const authState = oktaAuth.authStateManager.getAuthState();
-  if (authState && authState.accessToken)
-    request.headers.Authorization = `Bearer ${authState.accessToken.accessToken}`;
-  return request;
-});
-
 const graphqlLink = new HttpLink({
   uri: process.env.REACT_APP_BACKEND + "/graphql",
 });
+
 const authLink = setContext((_, { headers }) => {
   const authState = oktaAuth.authStateManager.getAuthState();
   const token = authState && authState.accessToken 
@@ -67,7 +44,7 @@ export const apolloClient = new ApolloClient({
   defaultOptions: {
     watchQuery: {
       fetchPolicy: 'no-cache',
-      errorPolicy: 'ignore',
+      errorPolicy: 'all',
     },
     query: {
       fetchPolicy: 'no-cache',

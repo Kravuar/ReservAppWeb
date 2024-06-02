@@ -1,5 +1,5 @@
 import { LocalDate, LocalTime } from "@js-joda/core";
-import { ReservationSlotDetailed } from "../../domain/Schedule";
+import { ReservationSlot } from "../../domain/Schedule";
 import { Box, Typography, Card, CardContent } from "@mui/material";
 import ManagedReservationSlotsBody from "./ManagedReservationSlotsBody";
 
@@ -14,15 +14,15 @@ export default function ScheduleBody({
   onReserve,
   showStaff,
 }: {
-  schedule: Map<LocalDate, ReservationSlotDetailed[]>;
+  schedule: Map<LocalDate, ReservationSlot[]>;
   onReserve: ReserveAction;
   showStaff: boolean;
 }) {
   async function reserveHandler(
     date: LocalDate,
-    slot: ReservationSlotDetailed
+    slot: ReservationSlot
   ): Promise<void> {
-    return onReserve(slot.staff.id, date, slot.start);
+    return onReserve(slot.staff!.id!, date, slot.start!);
   }
 
   return (

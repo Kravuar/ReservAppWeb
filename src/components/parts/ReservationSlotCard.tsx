@@ -1,4 +1,4 @@
-import { ReservationSlotDetailed } from "../../domain/Schedule";
+import { ReservationSlot } from "../../domain/Schedule";
 import {
   Card,
   CardHeader,
@@ -24,14 +24,14 @@ export default function ReservationSlotCard({
   showStaff,
   onReserve,
 }: {
-  reservationSlot: ReservationSlotDetailed;
+  reservationSlot: ReservationSlot;
   onReserve: () => Promise<void>;
   showStaff?: boolean;
 }) {
   const [reservationsLeft, setReservationsLeft] = useState<number>(0);
 
   useEffect(
-    () => setReservationsLeft(reservationSlot.reservationsLeft),
+    () => setReservationsLeft(reservationSlot.reservationsLeft!),
     [reservationSlot]
   );
 
@@ -53,7 +53,7 @@ export default function ReservationSlotCard({
               component="p"
               gutterBottom
             >
-              Запись, {reservationSlot.staff.name}
+              Запись, {reservationSlot.staff!.name}
             </Typography>
           ) : (
             <Typography
@@ -85,7 +85,7 @@ export default function ReservationSlotCard({
           sx={{ display: "flex", alignItems: "center", mb: 2 }}
         >
           <AccessTime sx={{ mr: 1 }} />
-          {`${reservationSlot.start.toString()} - ${reservationSlot.end.toString()}`}
+          {`${reservationSlot.start!.toString()} - ${reservationSlot.end!.toString()}`}
         </Typography>
         <Typography
           variant="body1"
