@@ -13,7 +13,7 @@ export class BusinessDetailed{
 export class BusinessFormData {
   constructor(
     public name: string,
-    public picture?: File,
+    public pictureUrl?: string,
     public description?: string,
   ) {}
 }

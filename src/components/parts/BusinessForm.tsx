@@ -5,12 +5,11 @@ import {
   Card,
   CardContent,
   CardActions,
-  IconButton,
-  CardMedia,
-  Typography,
+  CardMedia
 } from "@mui/material";
 import PhotoCamera from "@mui/icons-material/PhotoCamera";
 import { BusinessFormData } from "../../domain/Business";
+import { Box } from "@mui/system";
 
 export default function BusinessForm({
   onSubmit,
@@ -19,28 +18,22 @@ export default function BusinessForm({
 }) {
   const [name, setName] = React.useState("");
   const [description, setDescription] = React.useState("");
-  const [picture, setPicture] = React.useState<File | null>(null);
+  const [picture, setPicture] = React.useState("");
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     const formData: BusinessFormData = {
       name: name,
       description: description,
+      pictureUrl: picture
     };
-    if (picture) formData.picture = picture;
     onSubmit(formData)
       .then(() => {
         setName("");
         setDescription("");
-        setPicture(null);
+        setPicture("");
       })
       .catch(() => {});
-  };
-
-  const handlePictureChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      setPicture(event.target.files[0]);
-    }
   };
 
   return (
@@ -65,17 +58,21 @@ export default function BusinessForm({
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
-        <input
-          accept="image/*"
-          style={{ display: "none" }}
-          id="picture-input"
-          type="file"
-          onChange={handlePictureChange}
-        />
+        <Box flexDirection="row">
+          <PhotoCamera sx={{ mr: 2 }} />
+          <TextField
+            label="Изображение"
+            variant="outlined"
+            fullWidth
+            margin="normal"
+            value={picture}
+            onChange={(e) => setPicture(e.target.value)}
+          />
+        </Box>
         {picture && (
           <CardMedia
             component="img"
-            image={URL.createObjectURL(picture)}
+            image={picture}
             sx={{
               height: 200,
               backgroundSize: "contain",
@@ -84,18 +81,6 @@ export default function BusinessForm({
             }}
           />
         )}
-        <label htmlFor="picture-input">
-          <IconButton
-            color="primary"
-            aria-label="upload picture"
-            component="span"
-          >
-            <PhotoCamera sx={{ mr: 2 }} />
-            <Typography variant="h6" sx={{ flexGrow: 1 }}>
-              {picture ? picture.name : "Загрузить изображение"}
-            </Typography>
-          </IconButton>
-        </label>
       </CardContent>
       <CardActions>
         <Button type="submit" variant="contained" fullWidth sx={{backgroundColor: "success.dark"}}>

@@ -517,6 +517,7 @@ export async function createService(
     {
       name: formData.name,
       description: formData.description,
+      pictureUrl: formData.pictureUrl
     }
   );
   return detailedService(response.data);
@@ -598,7 +599,8 @@ class BusinessDTO {
     public name: string,
     public ownerSub: string,
     public active: boolean,
-    public description?: string
+    public description?: string,
+    public pictureUrl?: string
   ) {}
 }
 
@@ -651,7 +653,7 @@ async function detailedService(service: Service) {
     service.id,
     business,
     service.active,
-    faker.image.url(),
+    service.pictureUrl!,
     faker.number.float({ fractionDigits: 2, min: 1, max: 5 }),
     service.name,
     service.description
@@ -672,7 +674,7 @@ async function detailedServicesByIds(
           service.id,
           businessSupplier.get(service.business.id)!,
           service.active,
-          faker.image.url(),
+          service.pictureUrl!,
           faker.number.float({ fractionDigits: 2, min: 1, max: 5 }),
           service.name,
           service.description
@@ -695,7 +697,7 @@ async function detailedServices(
           service.id,
           businessSupplier.get(service.business.id)!,
           service.active,
-          faker.image.url(),
+          service.pictureUrl!,
           faker.number.float({ fractionDigits: 2, min: 1, max: 5 }),
           service.name,
           service.description
@@ -763,7 +765,7 @@ function detailedBusiness(business: BusinessDTO): BusinessDetailed {
     business.name,
     business.ownerSub,
     business.active,
-    faker.image.url(),
+    business.pictureUrl!,
     faker.number.float({ fractionDigits: 2, min: 1, max: 5 }),
     business.description
   );

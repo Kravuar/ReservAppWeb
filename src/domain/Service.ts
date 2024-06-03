@@ -18,7 +18,8 @@ export class Service {
     public business: ServiceBusiness,
     public active: boolean,
     public name: string,
-    public description?: string
+    public description?: string,
+    public pictureUrl?: string
   ) {}
 }
 
@@ -27,7 +28,7 @@ export class ServiceFormData {
     public businessId: number,
     public name: string,
     public description?: string,
-    public picture?: File
+    public pictureUrl?: string
   ) {}
 }
 
